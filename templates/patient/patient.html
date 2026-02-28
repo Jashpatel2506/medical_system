@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details | HealSmart - AI-Powered Health Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A2540;
+            --secondary: #00D4FF;
+            --accent: #5469FF;
+            --text-dark: #1A1A1A;
+            --text-light: #6B7280;
+            --bg-light: #F9FAFB;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --error: #EF4444;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem 3rem;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(84, 105, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(-50px, 50px) scale(1.1);
+            }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Form Container */
+        .form-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 600px;
+            animation: fadeInUp 0.8s ease;
+            margin: auto;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: linear-gradient(135deg, rgba(84, 105, 255, 0.1) 0%, rgba(0, 212, 255, 0.1) 100%);
+            color: var(--accent);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .form-badge::before {
+            content: '🏥';
+            font-size: 1rem;
+        }
+
+        .form-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.4rem;
+            line-height: 1.2;
+        }
+
+        .form-header .highlight {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-header p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Form Styles */
+        .patient-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            padding-left: 2.6rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.3s;
+            background: var(--white);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(84, 105, 255, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: var(--text-light);
+            pointer-events: none;
+        }
+
+        .form-group.has-label .input-icon {
+            top: calc(50% + 10px);
+        }
+
+        /* Blood Group Selection */
+        .blood-group-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+        }
+
+        .blood-option {
+            position: relative;
+        }
+
+        .blood-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .blood-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem 0.5rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--white);
+            color: var(--text-dark);
+        }
+
+        .blood-option input[type="radio"]:checked + .blood-label {
+            border-color: var(--error);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+            color: var(--error);
+        }
+
+        .blood-label:hover {
+            border-color: var(--error);
+            transform: translateY(-2px);
+        }
+
+        /* Grid Layout for Height/Weight */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background: var(--primary);
+            color: var(--white);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'DM Sans', sans-serif;
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            background: transparent;
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(10, 37, 64, 0.2);
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            padding: 0.65rem 0.85rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            color: var(--success);
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 5rem 1rem 2rem;
+            }
+
+            .nav-container {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .form-header h1 {
+                font-size: 1.7rem;
+            }
+
+            .blood-group-options {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading State */
+        .btn-submit.loading {
+            position: relative;
+            color: transparent;
+            pointer-events: none;
+        }
+
+        .btn-submit.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Unit Labels */
+        .input-with-unit {
+            position: relative;
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .form-group.has-label .unit-label {
+            top: calc(50% + 10px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">Heal<span>Smart</span></a>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'login' %}">Diagnosis</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="form-card">
+            <div class="form-header">
+                <div class="form-badge">Patient Information</div>
+                <h1>Your <span class="highlight">Details</span></h1>
+                <p>Please fill in your personal health information</p>
+            </div>
+
+            {% if saved %}
+            <div class="success-message show">
+                Details saved successfully!
+            </div>
+            {% endif %}
+
+            <form id="patientForm" class="patient-form" method="POST" action="">
+                {% csrf_token %}
+                <div class="form-group has-label">
+                    <label for="fullname" class="form-label">Full Name</label>
+                    <span class="input-icon">👤</span>
+                    <input 
+                        type="text" 
+                        id="fullname" 
+                        name="fullname"
+                        class="form-input"  
+                        value="{{ patient.user.full_name }}"
+                        readonly
+                        
+                        
+                    >
+                </div>
+
+                <div class="form-group has-label">
+                    <label for="age" class="form-label">Age</label>
+                    <span class="input-icon">🎂</span>
+                    <input 
+                        type="number" 
+                        id="age" 
+                        name="age" 
+                        class="form-input" 
+                        placeholder="Enter your age"
+                        min="1"
+                        max="120"
+                        required
+                    >
+                </div>
+
+                <div class="form-group has-label">
+                    <label class="form-label">Blood Group</label>
+                    <div class="blood-group-options">
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="aplus" 
+                                name="blood_group" 
+                                value="A+" 
+                                required
+                            >
+                            <label for="aplus" class="blood-label">A+</label>
+                        </div>
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="aminus" 
+                                name="blood_group" 
+                                value="A-"
+                            >
+                            <label for="aminus" class="blood-label">A-</label>
+                        </div>
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="bplus" 
+                                name="blood_group" 
+                                value="B+"
+                            >
+                            <label for="bplus" class="blood-label">B+</label>
+                        </div>
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="bminus" 
+                                name="blood_group" 
+                                value="B-"
+                            >
+                            <label for="bminus" class="blood-label">B-</label>
+                        </div>
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="oplus" 
+                                name="blood_group" 
+                                value="O+"
+                            >
+                            <label for="oplus" class="blood-label">O+</label>
+                        </div>
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="ominus" 
+                                name="blood_group" 
+                                value="O-"
+                            >
+                            <label for="ominus" class="blood-label">O-</label>
+                        </div>
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="abplus" 
+                                name="blood_group" 
+                                value="AB+"
+                            >
+                            <label for="abplus" class="blood-label">AB+</label>
+                        </div>
+                        <div class="blood-option">
+                            <input 
+                                type="radio" 
+                                id="abminus" 
+                                name="blood_group" 
+                                value="AB-"
+                            >
+                            <label for="abminus" class="blood-label">AB-</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group has-label input-with-unit">
+                        <label for="height" class="form-label">Height</label>
+                        <span class="input-icon">📏</span>
+                        <input 
+                            type="number" 
+                            id="height" 
+                            name="height_cm" 
+                            class="form-input" 
+                            placeholder="Enter height"
+                            min="50"
+                            max="250"
+                            required
+                        >
+                        <span class="unit-label">cm</span>
+                    </div>
+
+                    <div class="form-group has-label input-with-unit">
+                        <label for="weight" class="form-label">Weight</label>
+                        <span class="input-icon">⚖️</span>
+                        <input 
+                            type="number" 
+                            id="weight" 
+                            name="weight_kg" 
+                            class="form-input" 
+                            placeholder="Enter weight"
+                            min="20"
+                            max="300"
+                            required
+                        >
+                        <span class="unit-label">kg</span>
+                    </div>
+                </div>
+
+                <div class="form-group has-label">
+                    <label for="emergency" class="form-label">Emergency Contact Number</label>
+                    <span class="input-icon">🚨</span>
+                    <input 
+                        type="tel" 
+                        id="emergency" 
+                        name="emergency_contact" 
+                        class="form-input" 
+                        placeholder="Enter emergency contact"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn-submit">Save Details</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Form Submission
+        const patientForm = document.getElementById('patientForm');
+        const successMessage = document.getElementById('successMessage');
+
+
+        // Add floating animation to form inputs on focus
+        const formInputs = document.querySelectorAll('.form-input');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Phone number formatting
+        const emergencyInput = document.getElementById('emergency');
+        emergencyInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.substring(0, 10);
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>
