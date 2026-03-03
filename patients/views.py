@@ -10,7 +10,16 @@ def patient_page(request):
     user = User.objects.get(id=user_id)
 
     # ✅ CREATE patient row if it doesn't exist
-    patient, created = Patient.objects.get_or_create(user=user)
+    patient, created = Patient.objects.get_or_create(
+        user=user,
+        defaults={  
+        'blood_group': '',  
+        'height_cm': 0,  
+        'weight_kg': 0,   
+        'emergency_contact': '',  
+        'age': 0  
+    }  
+)
 
     if request.method == "POST":
         patient.blood_group = request.POST.get("blood_group")
@@ -25,5 +34,5 @@ def patient_page(request):
     return render(request, "patient/patient.html", {
         "patient": patient,
         "user": user,   # ✅ added
-         "saved": True
+        "saved": request.method == "POST"
     })
