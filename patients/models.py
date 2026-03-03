@@ -8,11 +8,11 @@ class Patient(models.Model):
         on_delete=models.CASCADE,
         db_column="user_id"
     )
-    blood_group = models.CharField(max_length=5, null=True, blank=True)
-    height_cm = models.IntegerField(null=True, blank=True)
-    weight_kg = models.IntegerField(null=True, blank=True)
-    emergency_contact = models.CharField(max_length=15, null=True, blank=True)
-    age = models.IntegerField(null=True, blank=True)
+    blood_group = models.CharField(max_length=5)
+    height_cm = models.IntegerField()
+    weight_kg = models.IntegerField()
+    emergency_contact = models.CharField(max_length=15)
+    age = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)  # ✅ FIX
 
 
