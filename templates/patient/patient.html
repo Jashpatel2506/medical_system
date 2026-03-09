@@ -438,6 +438,7 @@
                 <li><a href="{% url 'login' %}">Diagnosis</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
             </ul>
         </div>
     </nav>
@@ -460,15 +461,15 @@
             <form id="patientForm" class="patient-form" method="POST" action="">
                 {% csrf_token %}
                 <div class="form-group has-label">
-                    <label for="fullname" class="form-label">Full Name</label>
+                    <label for="full_name" class="form-label">Full Name</label>
                     <span class="input-icon">👤</span>
                     <input 
                         type="text" 
-                        id="fullname" 
-                        name="fullname"
+                        id="full_name" 
+                        name="full_name"
                         class="form-input"  
                         value="{{ patient.user.full_name }}"
-                        readonly
+                        placeholder="Enter your full name"
                         
                         
                     >
@@ -482,10 +483,11 @@
                         id="age" 
                         name="age" 
                         class="form-input" 
+                        value ="{{ patient.age }}"
                         placeholder="Enter your age"
                         min="1"
                         max="120"
-                        required
+                        
                     >
                 </div>
 
@@ -497,8 +499,9 @@
                                 type="radio" 
                                 id="aplus" 
                                 name="blood_group" 
-                                value="A+" 
-                                required
+                                value="A+"
+                                {% if patient.blood_group == 'A+' %}checked{% endif %} 
+                                
                             >
                             <label for="aplus" class="blood-label">A+</label>
                         </div>
@@ -508,6 +511,7 @@
                                 id="aminus" 
                                 name="blood_group" 
                                 value="A-"
+                                {% if patient.blood_group == 'A-' %}checked{% endif %}
                             >
                             <label for="aminus" class="blood-label">A-</label>
                         </div>
@@ -517,6 +521,7 @@
                                 id="bplus" 
                                 name="blood_group" 
                                 value="B+"
+                                {% if patient.blood_group == 'B+' %}checked{% endif %}
                             >
                             <label for="bplus" class="blood-label">B+</label>
                         </div>
@@ -526,6 +531,7 @@
                                 id="bminus" 
                                 name="blood_group" 
                                 value="B-"
+                                {% if patient.blood_group == 'B-' %}checked{% endif %}
                             >
                             <label for="bminus" class="blood-label">B-</label>
                         </div>
@@ -535,6 +541,7 @@
                                 id="oplus" 
                                 name="blood_group" 
                                 value="O+"
+                                {% if patient.blood_group == 'O+' %}checked{% endif %}
                             >
                             <label for="oplus" class="blood-label">O+</label>
                         </div>
@@ -544,6 +551,7 @@
                                 id="ominus" 
                                 name="blood_group" 
                                 value="O-"
+                                {% if patient.blood_group == 'O-' %}checked{% endif %}
                             >
                             <label for="ominus" class="blood-label">O-</label>
                         </div>
@@ -553,6 +561,7 @@
                                 id="abplus" 
                                 name="blood_group" 
                                 value="AB+"
+                                {% if patient.blood_group == 'AB+' %}checked{% endif %}
                             >
                             <label for="abplus" class="blood-label">AB+</label>
                         </div>
@@ -562,6 +571,7 @@
                                 id="abminus" 
                                 name="blood_group" 
                                 value="AB-"
+                                {% if patient.blood_group == 'AB-' %}checked{% endif %}
                             >
                             <label for="abminus" class="blood-label">AB-</label>
                         </div>
@@ -577,10 +587,11 @@
                             id="height" 
                             name="height_cm" 
                             class="form-input" 
+                            value = "{{ patient.height_cm }}"
                             placeholder="Enter height"
                             min="50"
                             max="250"
-                            required
+                            
                         >
                         <span class="unit-label">cm</span>
                     </div>
@@ -593,10 +604,11 @@
                             id="weight" 
                             name="weight_kg" 
                             class="form-input" 
+                            value = "{{ patient.weight_kg }}"
                             placeholder="Enter weight"
                             min="20"
                             max="300"
-                            required
+                            
                         >
                         <span class="unit-label">kg</span>
                     </div>
@@ -610,12 +622,14 @@
                         id="emergency" 
                         name="emergency_contact" 
                         class="form-input" 
+                        value = "{{ patient.emergency_contact }}"
                         placeholder="Enter emergency contact"
                         required
                     >
                 </div>
-
-                <button type="submit" class="btn-submit">Save Details</button>
+                <a href="{% url 'patient_chat' %}">
+                    <button type="submit" class="btn-submit">Save Details & Start Chat</button>
+                </a>
             </form>
         </div>
     </div>

@@ -18,7 +18,7 @@ def login_view(request):
                 request.session["full_name"] = user.full_name   # ADD THIS
 
                 if user.role == "Patient":
-                    return redirect("patient")
+                    return redirect("patient_chat")
                 elif user.role == "Doctor":
                     return redirect("doctor")
 
@@ -45,37 +45,58 @@ def signin_view(request):
         gender = request.POST.get("gender")   # ✅ ADD
         dob = request.POST.get("dob")  
 
+        
+
         # ❌ check if email already exists
         if User.objects.filter(email=email).exists():
             return render(request, "login/signin.html", {
                 "error": "Email already registered"
             })
+        # ✅ Check if phone already exists
+        if User.objects.filter(phone_number=phone).exists():
+            return render(request, "login/signin.html", {
+                "error": "Phone number already registered"
+            })
 
         # ✅ save to PostgreSQL
-        User.objects.create(
+        user = User.objects.create(
             full_name=full_name,
             email=email,
             password=password,   # (plain text for now)
             role=role,
             phone_number=phone,
             gender=gender,           # ✅ SAVED
-            dob=dob or None
+            dob=dob or None,
+            address=address
         )
         # ✅ CREATE PATIENT ROW ONLY IF ROLE IS PATIENT
         if role == "Patient":
-            Patient.objects.create(user=user)
+            Patient.objects.create(
+                user=user,
+                blood_group='',
+                height_cm=0,
+                weight_kg=0,
+                emergency_contact='',
+                age=0
+            )
+            # ✅ set session and redirect by role
+        request.session["user_id"] = user.id
+        request.session["role"] = user.role
+        request.session["full_name"] = user.full_name
+
+        if role == "Patient":
+            return redirect("patient_page")
+        elif role == "Doctor":
+            return redirect("doctor")
 
         # ✅ after registration → go to login
         return redirect("login")
 
     return render(request, 'login/signin.html')
 
-def patient_page(request):
-    if request.session.get("role") != "Patient":
-        return redirect("login")
-    return render(request, 'patient/patient.html')
+def logout_view(request):
+    request.session.flush()  # clears everything
+    return redirect("login")
 
-def doctor_page(request):
-    if request.session.get("role") != "Doctor":
-        return redirect("login")
-    return render(request, 'doctor/doctor.html')
+
+

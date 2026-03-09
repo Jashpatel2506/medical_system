@@ -5,6 +5,13 @@ def home(request):
     #return HttpResponse("Hello, World!. you are at django ")
     return render(request, 'home1.html')
 
+from django.http import HttpResponse
+from django.shortcuts import render
+
+def home(request):
+    #return HttpResponse("Hello, World!. you are at django ")
+    return render(request, 'home1.html')
+
 def login(request):
     return render(request, 'login/login.html')
 

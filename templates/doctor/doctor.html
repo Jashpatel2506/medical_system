@@ -439,6 +439,7 @@
                 <li><a href="{% url 'login' %}">Diagnosis</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
             </ul>
         </div>
     </nav>
@@ -452,22 +453,26 @@
                 <p>Please fill in your professional information</p>
             </div>
 
-            <div class="success-message" id="successMessage">
+            {% if saved %}
+            <div class="success-message show" id="successMessage">
                 Details saved successfully!
             </div>
+            {% endif %}
 
-            <form class="doctor-form" id="doctorForm">
+            <form id="doctorForm" class="doctor-form" method="POST" action="">
+                {% csrf_token %}
                 <div class="form-group has-label">
                     <label for="fullname" class="form-label">Full Name</label>
                     <span class="input-icon">👨‍⚕️</span>
                     <input 
                         type="text" 
-                        id="fullname" 
-                        name="fullname" 
+                        id = "fullname"
+                        name="name" 
                         class="form-input" 
                         placeholder="Dr. John Doe"
+                        value ="{{ doctor.name }}"
                         required
-                    >
+                    >    
                 </div>
 
                 <div class="form-group has-label">
@@ -479,6 +484,7 @@
                         name="age" 
                         class="form-input" 
                         placeholder="Enter your age"
+                        value ="{{ doctor.age|default:'' }}"
                         min="25"
                         max="80"
                         required
@@ -491,9 +497,10 @@
                     <input 
                         type="text" 
                         id="qualification" 
-                        name="qualification" 
+                        name="qualifications" 
                         class="form-input" 
                         placeholder="e.g., MBBS, MD, MS"
+                        value="{{ doctor.qualifications|default:'' }}"
                         required
                     >
                 </div>
@@ -502,37 +509,38 @@
                     <label class="form-label">Specialization (Select all that apply)</label>
                     <div class="specialization-group">
                         <div class="checkbox-item">
-                            <input type="checkbox" id="cardiology" name="specialization" value="Cardiology">
+                            <input type="checkbox" id="cardiology" name="specialization_checkbox" value="Cardiology">
                             <label for="cardiology">🫀 Cardiology</label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="neurology" name="specialization" value="Neurology">
+                            <input type="checkbox" id="neurology" name="specialization_checkbox" value="Neurology">
                             <label for="neurology">🧠 Neurology</label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="orthopedics" name="specialization" value="Orthopedics">
+                            <input type="checkbox" id="orthopedics" name="specialization_checkbox" value="Orthopedics">
                             <label for="orthopedics">🦴 Orthopedics</label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="pediatrics" name="specialization" value="Pediatrics">
+                            <input type="checkbox" id="pediatrics" name="specialization_checkbox" value="Pediatrics">
                             <label for="pediatrics">👶 Pediatrics</label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="dermatology" name="specialization" value="Dermatology">
+                            <input type="checkbox" id="dermatology" name="specialization_checkbox" value="Dermatology">
                             <label for="dermatology">💆 Dermatology</label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="general" name="specialization" value="General Medicine">
+                            <input type="checkbox" id="general" name="specialization_checkbox" value="General Medicine">
                             <label for="general">🏥 General Medicine</label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="surgery" name="specialization" value="Surgery">
+                            <input type="checkbox" id="surgery" name="specialization_checkbox" value="Surgery">
                             <label for="surgery">🔪 Surgery</label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="psychiatry" name="specialization" value="Psychiatry">
+                            <input type="checkbox" id="psychiatry" name="specialization_checkbox" value="Psychiatry">
                             <label for="psychiatry">🧘 Psychiatry</label>
                         </div>
+                        <input type="hidden" id="specialization_hidden" name="specialization" value="">
                     </div>
                 </div>
 
@@ -542,9 +550,10 @@
                     <input 
                         type="number" 
                         id="experience" 
-                        name="experience" 
+                        name="years_of_experience" 
                         class="form-input" 
                         placeholder="Enter years of experience"
+                        value="{{ doctor.years_of_experience|default:'' }}"
                         min="0"
                         max="50"
                         required
@@ -558,9 +567,10 @@
                     <input 
                         type="text" 
                         id="hospitalClinic" 
-                        name="hospitalClinic" 
+                        name="clinic_name" 
                         class="form-input" 
                         placeholder="Enter hospital or clinic name"
+                        value="{{ doctor.clinic_name|default:'' }}"
                         required
                     >
                 </div>
@@ -571,58 +581,17 @@
     </div>
 
     <script>
-        // Form Submission
+        // combine selected specializations into hidden input before form submission
         const doctorForm = document.getElementById('doctorForm');
-        const successMessage = document.getElementById('successMessage');
-
         doctorForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitBtn = this.querySelector('.btn-submit');
-            
-            // Check if at least one specialization is selected
-            const specializations = document.querySelectorAll('input[name="specialization"]:checked');
+            const specializations = document.querySelectorAll('input[name="specialization_checkbox"]:checked');
             if (specializations.length === 0) {
+                e.preventDefault();
                 alert('Please select at least one specialization');
                 return;
             }
-
-            submitBtn.classList.add('loading');
-            successMessage.classList.remove('show');
-
-            // Get form data
-            setTimeout(() => {
-                const fullname = document.getElementById('fullname').value;
-                const age = document.getElementById('age').value;
-                const qualification = document.getElementById('qualification').value;
-                const experience = document.getElementById('experience').value;
-                const hospitalClinic = document.getElementById('hospitalClinic').value;
-
-                // Get selected specializations
-                const selectedSpecializations = Array.from(specializations).map(cb => cb.value);
-
-                // Here you would typically make an API call to save the data
-                console.log('Doctor Details:', {
-                    fullname,
-                    age,
-                    qualification,
-                    specializations: selectedSpecializations,
-                    experience,
-                    hospitalClinic
-                });
-
-                // Simulate success
-                submitBtn.classList.remove('loading');
-                successMessage.classList.add('show');
-
-                // Optionally redirect or update UI
-                setTimeout(() => {
-                    successMessage.classList.remove('show');
-                    // You could redirect to a profile page
-                    // window.location.href = 'doctor-profile.html';
-                }, 2000);
-
-            }, 1500);
+            const selected = Array.from(specializations).map(cb => cb.value);
+            document.getElementById('specialization_hidden').value = selected.join(',');     
         });
 
         // Add floating animation to form inputs on focus
@@ -646,6 +615,17 @@
                 }
             });
         });
+
+        // Pre-check specializations from saved data
+        const savedSpec = "{{ doctor.specialization|default:'' }}";
+        if (savedSpec) {
+            const savedList = savedSpec.split(', ');
+            document.querySelectorAll('input[name="specialization_checkbox"]').forEach(cb => {
+                if (savedList.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+        }
     </script>
 </body>
 </html>

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'patients',
+    'doctors',
 ]
 
 MIDDLEWARE = [
@@ -78,7 +79,7 @@ WSGI_APPLICATION = 'medical_system.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'medical',      # your DB name
+        'NAME': 'medical',
         'USER': 'postgres',
         'PASSWORD': '123456',
         'HOST': 'localhost',
