@@ -1,0 +1,241 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Doctors - Admin Dashboard{% endblock %}
+{% block page_title %}Doctor Management{% endblock %}
+{% block breadcrumb_current %}Doctors{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .table-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .count-badge {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 1rem 1.25rem;
+        font-size: 0.8rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-bottom: 2px solid var(--border);
+    }
+
+    td {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-dark);
+        font-size: 0.95rem;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td {
+        background: var(--bg-light);
+    }
+
+    .cell-profile {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .cell-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--teal), #0D9488);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+    }
+
+    .cell-name {
+        font-weight: 700;
+        color: var(--primary);
+        display: block;
+    }
+
+    .cell-sub {
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    .action-btn {
+        padding: 0.5rem 1.25rem;
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(84, 105, 255, 0.25);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(84, 105, 255, 0.35);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="table-panel">
+    <div class="table-header">
+        <div class="table-title">
+            👨‍⚕️ All Doctors
+            <span class="count-badge">{{ doctors|length }} Total</span>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Contact Info</th>
+                    <th>Specialization</th>
+                    <th>Experience / Clinic</th>
+                    <th>Joined Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doctor in doctors %}
+                <tr>
+                    <td>
+                        <div class="cell-profile">
+                            <div class="cell-avatar">{{ doctor.name.0|default:"D" }}</div>
+                            <div>
+                                <span class="cell-name">Dr. {{ doctor.name }}</span>
+                                <span class="cell-sub">{{ doctor.user.gender|default:"Not specified" }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="cell-name">{{ doctor.user.phone_number }}</span>
+                        <span class="cell-sub">{{ doctor.user.email }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-name">{{ doctor.specialization|default:"General" }}</span>
+                        <span class="cell-sub">{{ doctor.qualifications|default:"MBBS" }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-name">{{ doctor.years_of_experience|default:"0" }} yrs</span>
+                        <span class="cell-sub">{{ doctor.clinic_name|default:"Not specified" }}</span>
+                    </td>
+                    <td>{{ doctor.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <button class="action-btn" onclick="openDoctorModal('{{ doctor.name|escapejs }}', '{{ doctor.specialization|default:'General'|escapejs }}', '{{ doctor.user.phone_number|escapejs }}', '{{ doctor.user.email|escapejs }}', '{{ doctor.qualifications|default:'MBBS'|escapejs }}', '{{ doctor.years_of_experience|default:'N/A'|escapejs }}', '{{ doctor.clinic_name|default:'Not specified'|escapejs }}')">View Details</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-light); font-weight: 500;">
+                        No doctors registered yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Doctor Details Modal -->
+<div id="doctorModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Doctor Details</h2>
+            <button class="modal-close" onclick="closeModal('doctorModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-group">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value" id="modal-doctor-name">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Specialization</span>
+                <span class="detail-value" id="modal-doctor-specialization">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Contact Number</span>
+                <span class="detail-value" id="modal-doctor-phone">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Email Address</span>
+                <span class="detail-value" id="modal-doctor-email">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Qualifications</span>
+                <span class="detail-value" id="modal-doctor-qualifications">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Experience</span>
+                <span class="detail-value" id="modal-doctor-experience">-</span>
+            </div>
+            <div class="detail-group full-width">
+                <span class="detail-label">Clinic / Hospital</span>
+                <span class="detail-value" id="modal-doctor-clinic">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openDoctorModal(name, specialization, phone, email, qualifications, experience, clinic) {
+        document.getElementById('modal-doctor-name').textContent = 'Dr. ' + name;
+        document.getElementById('modal-doctor-specialization').textContent = specialization;
+        document.getElementById('modal-doctor-phone').textContent = phone;
+        document.getElementById('modal-doctor-email').textContent = email;
+        document.getElementById('modal-doctor-qualifications').textContent = qualifications;
+        document.getElementById('modal-doctor-experience').textContent = experience !== 'N/A' ? experience + ' yrs' : 'N/A';
+        document.getElementById('modal-doctor-clinic').textContent = clinic;
+        
+        document.getElementById('doctorModal').classList.add('show');
+    }
+</script>
+{% endblock %}

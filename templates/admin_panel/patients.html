@@ -1,0 +1,246 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Patients - Admin Dashboard{% endblock %}
+{% block page_title %}Patient Management{% endblock %}
+{% block breadcrumb_current %}Patients{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .table-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .count-badge {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: var(--accent);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 1rem 1.25rem;
+        font-size: 0.8rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-bottom: 2px solid var(--border);
+    }
+
+    td {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-dark);
+        font-size: 0.95rem;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td {
+        background: var(--bg-light);
+    }
+
+    .cell-profile {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .cell-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 12px rgba(84, 105, 255, 0.25);
+    }
+
+    .cell-name {
+        font-weight: 700;
+        color: var(--primary);
+        display: block;
+    }
+
+    .cell-sub {
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    .action-btn {
+        padding: 0.5rem 1.25rem;
+        background: linear-gradient(135deg, var(--teal), #0D9488);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="table-panel">
+    <div class="table-header">
+        <div class="table-title">
+            🛏️ All Patients
+            <span class="count-badge">{{ patients|length }} Total</span>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Contact Info</th>
+                    <th>Age / Blood Group</th>
+                    <th>Height / Weight</th>
+                    <th>Joined Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td>
+                        <div class="cell-profile">
+                            <div class="cell-avatar">{{ patient.user.full_name.0|default:"U" }}</div>
+                            <div>
+                                <span class="cell-name">{{ patient.user.full_name }}</span>
+                                <span class="cell-sub">{{ patient.user.gender|default:"Not specified" }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="cell-name">{{ patient.user.phone_number }}</span>
+                        <span class="cell-sub">{{ patient.user.email }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-name">{{ patient.age|default:"N/A" }} yrs</span>
+                        <span class="cell-sub">{{ patient.blood_group|default:"N/A" }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-name">{{ patient.height_cm|default:"-" }} cm</span>
+                        <span class="cell-sub">{{ patient.weight_kg|default:"-" }} kg</span>
+                    </td>
+                    <td>{{ patient.user.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <button class="action-btn" onclick="openPatientModal('{{ patient.user.full_name|escapejs }}', '{{ patient.user.gender|default:'Not specified'|escapejs }}', '{{ patient.user.phone_number|escapejs }}', '{{ patient.user.email|escapejs }}', '{{ patient.age|default:'N/A'|escapejs }}', '{{ patient.blood_group|default:'N/A'|escapejs }}', '{{ patient.height_cm|default:'-'|escapejs }}', '{{ patient.weight_kg|default:'-'|escapejs }}')">View Details</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-light); font-weight: 500;">
+                        No patients registered yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Patient Details Modal -->
+<div id="patientModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Patient Details</h2>
+            <button class="modal-close" onclick="closeModal('patientModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-group">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value" id="modal-patient-name">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Gender</span>
+                <span class="detail-value" id="modal-patient-gender">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Contact Number</span>
+                <span class="detail-value" id="modal-patient-phone">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Email Address</span>
+                <span class="detail-value" id="modal-patient-email">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Age</span>
+                <span class="detail-value" id="modal-patient-age">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Blood Group</span>
+                <span class="detail-value" id="modal-patient-blood">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Height (cm)</span>
+                <span class="detail-value" id="modal-patient-height">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Weight (kg)</span>
+                <span class="detail-value" id="modal-patient-weight">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openPatientModal(name, gender, phone, email, age, blood, height, weight) {
+        document.getElementById('modal-patient-name').textContent = name;
+        document.getElementById('modal-patient-gender').textContent = gender;
+        document.getElementById('modal-patient-phone').textContent = phone;
+        document.getElementById('modal-patient-email').textContent = email;
+        document.getElementById('modal-patient-age').textContent = age !== 'N/A' ? age + ' yrs' : 'N/A';
+        document.getElementById('modal-patient-blood').textContent = blood;
+        document.getElementById('modal-patient-height').textContent = height !== '-' ? height + ' cm' : '-';
+        document.getElementById('modal-patient-weight').textContent = weight !== '-' ? weight + ' kg' : '-';
+        
+        document.getElementById('patientModal').classList.add('show');
+    }
+</script>
+{% endblock %}

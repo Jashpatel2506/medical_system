@@ -1,0 +1,563 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard - HealSmart{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A2540;
+            --secondary: #00D4FF;
+            --accent: #5469FF;
+            --teal: #14B8A6;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --bg-light: #F1F5F9;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(to bottom, #E0F2FE 0%, #F1F5F9 100%);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width: 280px;
+            background: var(--primary);
+            color: #ffffff;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar-brand-name span {
+            color: var(--accent);
+        }
+
+        .sidebar-brand-sub {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-category {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.4);
+            margin: 1.5rem 0 0.75rem 1rem;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.85rem 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, var(--accent), #6366F1);
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(84, 105, 255, 0.35);
+        }
+
+        .sidebar-link-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-badge {
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .sidebar-link.active .sidebar-badge {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .admin-card {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .admin-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #6366F1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(84, 105, 255, 0.3);
+        }
+
+        .admin-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .admin-info p {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-logout {
+            padding: 0.65rem 1.5rem;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        /* ─── Main Content ─── */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem 3rem 4rem;
+        }
+
+        /* ─── Topbar ─── */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-heading h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .breadcrumb {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .breadcrumb span {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 14px;
+            border: 2px solid var(--border);
+            width: 260px;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(84, 105, 255, 0.1);
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            padding-left: 8px;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-light);
+        }
+
+        .topbar-icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: var(--text-light);
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .topbar-icon-btn:hover {
+            color: var(--accent);
+            background: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(84, 105, 255, 0.15);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 1024px) {
+            .sidebar { width: 240px; }
+            .main-content { margin-left: 240px; padding: 1.5rem 2rem; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 1.5rem; }
+        }
+
+        /* ─── Modal Base ─── */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+        .modal-close {
+            background: var(--bg-light);
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+            transform: rotate(90deg);
+        }
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .detail-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .detail-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .detail-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            word-break: break-word;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">🏥</div>
+            <div>
+                <div class="sidebar-brand-name">Heal<span>Smart</span></div>
+                <div class="sidebar-brand-sub">Admin Panel</div>
+            </div>
+        </div>
+
+        <div class="sidebar-category">Main</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{% url 'admin_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <span class="sidebar-link-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-category">Management</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{% url 'admin_patients' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_patients' %}active{% endif %}">
+                    <span class="sidebar-link-icon">🛏️</span>
+                    <span>Patients</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_doctors' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_doctors' %}active{% endif %}">
+                    <span class="sidebar-link-icon">👨‍⚕️</span>
+                    <span>Doctors</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_appointments' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_appointments' %}active{% endif %}">
+                    <span class="sidebar-link-icon">📅</span>
+                    <span>Appointments</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_medical_records' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_medical_records' %}active{% endif %}">
+                    <span class="sidebar-link-icon">📄</span>
+                    <span>Medical Records</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-category">Reports</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="#" class="sidebar-link">
+                    <span class="sidebar-link-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link">
+                    <span class="sidebar-link-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <div class="admin-card">
+                <div class="admin-avatar">SA</div>
+                <div class="admin-info">
+                    <h4>System Admin</h4>
+                    <p>Super Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="page-heading">
+                <h1>{% block page_title %}Admin Dashboard{% endblock %}</h1>
+                <div class="breadcrumb">Home / <span>{% block breadcrumb_current %}Overview{% endblock %}</span></div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="admin-search-input" placeholder="Search...">
+                </div>
+
+                <a href="{% url 'logout' %}" class="btn-logout" title="Logout from HealSmart">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </header>
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('admin-search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase().trim();
+                    const tables = document.querySelectorAll('table');
+                    
+                    tables.forEach(table => {
+                        const rows = table.querySelectorAll('tbody tr');
+                        rows.forEach(row => {
+                            // Don't filter placeholder empty rows (usually have colspan)
+                            if (row.cells.length === 1 && row.cells[0].hasAttribute('colspan')) {
+                                return;
+                            }
+                            
+                            const text = row.textContent.toLowerCase();
+                            if (text.includes(query)) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+            }
+        });
+
+        // Global Modal Functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

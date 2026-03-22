@@ -1,0 +1,445 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Admin Dashboard - HealSmart{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block breadcrumb_current %}Overview{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ─── Stat Cards ─── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        transform: scaleX(0);
+        transition: transform 0.4s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .card-patients::before { background: linear-gradient(90deg, var(--accent), var(--secondary)); }
+    .card-doctors::before { background: linear-gradient(90deg, var(--teal), #0D9488); }
+    .card-appointments::before { background: linear-gradient(90deg, var(--warning), #D97706); }
+    .card-records::before { background: linear-gradient(90deg, var(--danger), #DC2626); }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-icon.blue { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+    .stat-icon.green { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+    .stat-icon.orange { background: linear-gradient(135deg, #FED7AA, #FDBA74); }
+    .stat-icon.red { background: linear-gradient(135deg, #FEE2E2, #FECACA); }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--primary);
+        margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+        font-size: 0.95rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .stat-change {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .stat-change.positive { color: var(--success); }
+    .stat-change.negative { color: var(--danger); }
+
+    /* ─── Main Grid ─── */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    .panel {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .panel-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .badge-count {
+        background: var(--bg-light);
+        color: var(--text-light);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .btn-view-all {
+        padding: 0.6rem 1.4rem;
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(84, 105, 255, 0.25);
+    }
+
+    .btn-view-all:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(84, 105, 255, 0.35);
+    }
+
+    /* ─── Appointment List ─── */
+    .appointment-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .appointment-item {
+        display: grid;
+        grid-template-columns: 90px 42px 1fr auto;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .appointment-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .apt-time { text-align: right; }
+    .apt-time .time {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 0.95rem;
+    }
+
+    .apt-time .day {
+        font-size: 0.75rem;
+        color: var(--text-light);
+    }
+
+    .apt-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(84, 105, 255, 0.25);
+    }
+
+    .apt-info h4 {
+        font-size: 0.95rem;
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .apt-info p {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .apt-status {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .apt-status.confirmed {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+    }
+
+    .apt-status.pending {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        color: #92400E;
+    }
+
+    /* ─── Right Panel: Appointment Status ─── */
+    .status-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .status-stat-item { text-align: center; }
+
+    .status-stat-value {
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .status-stat-label {
+        font-size: 0.75rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .val-completed { color: var(--success); }
+    .val-confirmed { color: var(--accent); }
+    .val-pending { color: var(--warning); }
+    .val-missed { color: var(--danger); }
+
+    .chart-title {
+        font-size: 0.75rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .chart-container {
+        height: 150px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding-top: 1rem;
+    }
+
+    .bar {
+        width: 12%;
+        background: var(--border);
+        border-radius: 6px 6px 0 0;
+        position: relative;
+        transition: all 0.3s;
+    }
+
+    .bar:hover {
+        background: var(--accent);
+    }
+
+    .bar.active {
+        background: linear-gradient(to top, var(--accent), #6366F1);
+    }
+
+    .bar-label {
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.7rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    .empty-appointments {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--text-light);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1200px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card card-patients">
+        <div class="stat-header">
+            <div class="stat-icon blue">🛏️</div>
+        </div>
+        <div class="stat-value">{{ total_patients }}</div>
+        <div class="stat-label">Total Patients</div>
+        <div class="stat-change positive">📈 +3 this month</div>
+    </div>
+
+    <div class="stat-card card-doctors">
+        <div class="stat-header">
+            <div class="stat-icon green">👨‍⚕️</div>
+        </div>
+        <div class="stat-value">{{ total_doctors }}</div>
+        <div class="stat-label">Active Doctors</div>
+        <div class="stat-change positive">📈 +1 this month</div>
+    </div>
+
+    <div class="stat-card card-appointments">
+        <div class="stat-header">
+            <div class="stat-icon orange">📅</div>
+        </div>
+        <div class="stat-value">{{ total_appointments }}</div>
+        <div class="stat-label">Appointments</div>
+        <div class="stat-change positive">📈 +7 this week</div>
+    </div>
+
+    <div class="stat-card card-records">
+        <div class="stat-header">
+            <div class="stat-icon red">📄</div>
+        </div>
+        <div class="stat-value">{{ total_medical_records }}</div>
+        <div class="stat-label">Medical Records</div>
+        <div class="stat-change negative">⏳ 2 pending review</div>
+    </div>
+</div>
+
+<!-- Main Grid -->
+<div class="dashboard-grid">
+    <!-- Today's Appointments -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                📅 Today's Appointments
+                <span class="badge-count">{{ recent_appointments|length }} scheduled</span>
+            </div>
+            <a href="{% url 'admin_appointments' %}" class="btn-view-all">👁️ View All</a>
+        </div>
+
+        <div class="appointment-list">
+            {% for appointment in recent_appointments %}
+            <div class="appointment-item">
+                <div class="apt-time">
+                    <div class="time">{{ appointment.appointment_time|default:"N/A" }}</div>
+                    <div class="day">{{ appointment.appointment_date|date:"M d" }}</div>
+                </div>
+                <div class="apt-avatar">
+                    {{ appointment.patient.user.full_name.0|default:"U" }}
+                </div>
+                <div class="apt-info">
+                    <h4>{{ appointment.patient.user.full_name }} → Dr. {{ appointment.doctor.name }}</h4>
+                    <p>⚕️ {{ appointment.reason_for_visit|truncatechars:30 }} • ⏱️ 30 min</p>
+                </div>
+                <div class="apt-status {% if appointment.status == 'Booked' %}confirmed{% else %}pending{% endif %}">
+                    {% if appointment.status == 'Booked' %}✔️ Confirmed{% elif appointment.status == 'Pending' %}⏳ Pending{% else %}{{ appointment.status }}{% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-appointments">
+                No recent appointments found.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Appointment Status -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">📊 Appointment Status</div>
+        </div>
+
+        <div class="status-stats">
+            <div class="status-stat-item">
+                <div class="status-stat-value val-completed">{{ completed_appointments }}</div>
+                <div class="status-stat-label">Completed</div>
+            </div>
+            <div class="status-stat-item">
+                <div class="status-stat-value val-confirmed">{{ confirmed_appointments }}</div>
+                <div class="status-stat-label">Confirmed</div>
+            </div>
+            <div class="status-stat-item">
+                <div class="status-stat-value val-pending">{{ pending_appointments }}</div>
+                <div class="status-stat-label">Pending</div>
+            </div>
+            <div class="status-stat-item">
+                <div class="status-stat-value val-missed">{{ missed_appointments }}</div>
+                <div class="status-stat-label">Missed</div>
+            </div>
+        </div>
+
+        <div class="chart-title">WEEKLY TREND</div>
+        <div class="chart-container">
+            <div class="bar" style="height: 30%;"><div class="bar-label">Mon</div></div>
+            <div class="bar" style="height: 45%;"><div class="bar-label">Tue</div></div>
+            <div class="bar" style="height: 25%;"><div class="bar-label">Wed</div></div>
+            <div class="bar" style="height: 60%;"><div class="bar-label">Thu</div></div>
+            <div class="bar" style="height: 50%;"><div class="bar-label">Fri</div></div>
+            <div class="bar active" style="height: 90%;"><div class="bar-label">Sat</div></div>
+            <div class="bar" style="height: 20%;"><div class="bar-label">Sun</div></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

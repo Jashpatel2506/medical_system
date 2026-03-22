@@ -1,0 +1,52 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Medical Records - Admin Dashboard{% endblock %}
+{% block page_title %}Medical Records{% endblock %}
+{% block breadcrumb_current %}Medical Records{% endblock %}
+
+{% block extra_css %}
+<style>
+    .empty-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 4rem 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 2px dashed var(--border);
+        text-align: center;
+    }
+
+    .empty-icon {
+        font-size: 4.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.25;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.75rem;
+        font-weight: 900;
+        color: var(--primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-text {
+        font-size: 1rem;
+        color: var(--text-light);
+        font-weight: 500;
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="empty-panel">
+    <div class="empty-icon">📄</div>
+    <h2 class="empty-title">Medical Records Coming Soon</h2>
+    <p class="empty-text">
+        The Medical Records feature is not yet implemented because the database model does not exist.
+        Once the model is added, this page will list patient medical histories and prescriptions.
+    </p>
+</div>
+{% endblock %}

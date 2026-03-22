@@ -1,0 +1,306 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Appointments - Admin Dashboard{% endblock %}
+{% block page_title %}Appointment Management{% endblock %}
+{% block breadcrumb_current %}Appointments{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .table-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .count-badge {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        color: #92400E;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 1rem 1.25rem;
+        font-size: 0.8rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-bottom: 2px solid var(--border);
+    }
+
+    td {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-dark);
+        font-size: 0.95rem;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td {
+        background: var(--bg-light);
+    }
+
+    .cell-profile {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .cell-avatar-patient {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 12px rgba(84, 105, 255, 0.25);
+    }
+
+    .cell-avatar-doctor {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--teal), #0D9488);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+    }
+
+    .cell-name {
+        font-weight: 700;
+        color: var(--primary);
+        display: block;
+    }
+
+    .cell-sub {
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
+
+    .status-confirmed {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        color: #92400E;
+    }
+
+    .status-completed {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #1E40AF;
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
+        color: #991B1B;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1.25rem;
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(84, 105, 255, 0.25);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(84, 105, 255, 0.35);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="table-panel">
+    <div class="table-header">
+        <div class="table-title">
+            📅 All Appointments
+            <span class="count-badge">{{ appointments|length }} Total</span>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date & Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td>
+                        <div class="cell-profile">
+                            <div class="cell-avatar-patient">{{ appointment.patient.user.full_name.0|default:"P" }}</div>
+                            <div>
+                                <span class="cell-name">{{ appointment.patient.user.full_name }}</span>
+                                <span class="cell-sub">{{ appointment.patient.user.phone_number }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cell-profile">
+                            <div class="cell-avatar-doctor">{{ appointment.doctor.name.0|default:"D" }}</div>
+                            <div>
+                                <span class="cell-name">Dr. {{ appointment.doctor.name }}</span>
+                                <span class="cell-sub">{{ appointment.doctor.specialization|default:"General" }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="cell-name">{{ appointment.appointment_date|date:"F d, Y" }}</span>
+                        <span class="cell-sub">{{ appointment.appointment_time|default:"TBD" }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-sub" style="max-width: 200px; display: block;">{{ appointment.reason_for_visit|truncatechars:50|default:"Not specified" }}</span>
+                    </td>
+                    <td>
+                        {% if appointment.status == 'Booked' %}
+                            <span class="status-badge status-confirmed">✔️ Confirmed</span>
+                        {% elif appointment.status == 'Pending' %}
+                            <span class="status-badge status-pending">⏳ Pending</span>
+                        {% elif appointment.status == 'Completed' %}
+                            <span class="status-badge status-completed">👍 Completed</span>
+                        {% elif appointment.status == 'Cancelled' %}
+                            <span class="status-badge status-cancelled">❌ Cancelled</span>
+                        {% else %}
+                            <span class="status-badge status-pending">{{ appointment.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="openAppointmentModal('{{ appointment.patient.user.full_name|escapejs }}', '{{ appointment.patient.user.phone_number|escapejs }}', '{{ appointment.doctor.name|escapejs }}', '{{ appointment.doctor.specialization|default:'General'|escapejs }}', '{{ appointment.appointment_date|date:'F d, Y'|escapejs }}', '{{ appointment.appointment_time|default:'TBD'|escapejs }}', '{{ appointment.reason_for_visit|default:'Not specified'|escapejs }}', '{{ appointment.status|escapejs }}')">View Details</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-light); font-weight: 500;">
+                        No appointments found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Appointment Details Modal -->
+<div id="appointmentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Appointment Details</h2>
+            <button class="modal-close" onclick="closeModal('appointmentModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-group">
+                <span class="detail-label">Patient Name</span>
+                <span class="detail-value" id="modal-apt-patient-name">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Patient Contact</span>
+                <span class="detail-value" id="modal-apt-patient-phone">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Doctor Name</span>
+                <span class="detail-value" id="modal-apt-doctor-name">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Specialization</span>
+                <span class="detail-value" id="modal-apt-doctor-specialization">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Appointment Date</span>
+                <span class="detail-value" id="modal-apt-date">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Appointment Time</span>
+                <span class="detail-value" id="modal-apt-time">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Status</span>
+                <span class="detail-value" id="modal-apt-status">-</span>
+            </div>
+            <div class="detail-group full-width">
+                <span class="detail-label">Reason for Visit</span>
+                <span class="detail-value" id="modal-apt-reason">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openAppointmentModal(patientName, patientPhone, doctorName, doctorSpecialization, date, time, reason, status) {
+        document.getElementById('modal-apt-patient-name').textContent = patientName;
+        document.getElementById('modal-apt-patient-phone').textContent = patientPhone;
+        document.getElementById('modal-apt-doctor-name').textContent = 'Dr. ' + doctorName;
+        document.getElementById('modal-apt-doctor-specialization').textContent = doctorSpecialization;
+        document.getElementById('modal-apt-date').textContent = date;
+        document.getElementById('modal-apt-time').textContent = time;
+        document.getElementById('modal-apt-status').textContent = status;
+        document.getElementById('modal-apt-reason').textContent = reason;
+        
+        document.getElementById('appointmentModal').classList.add('show');
+    }
+</script>
+{% endblock %}
