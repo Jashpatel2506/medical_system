@@ -23,3 +23,7 @@ def patient(request):
 
 def doctor(request):
     return render(request, 'doctor/doctor.html')
+
+
+def contact(request):
+    return render(request, 'contact.html')

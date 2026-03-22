@@ -1,0 +1,1329 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - HealSmart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A2540;
+            --secondary: #00D4FF;
+            --accent: #5469FF;
+            --teal: #14B8A6;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --bg-light: #F1F5F9;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(to bottom, #E0F2FE 0%, #F1F5F9 100%);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a.active {
+            color: var(--accent);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification-btn {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1.2rem;
+        }
+
+        .notification-btn:hover {
+            background: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            border-radius: 50%;
+            font-size: 0.7rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border: 2px solid white;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1.25rem 0.5rem 0.5rem;
+            background: linear-gradient(135deg, var(--teal), #0D9488);
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+
+        .user-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: white;
+            color: var(--teal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .btn-logout {
+            padding: 0.65rem 1.5rem;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 80px;
+            padding: 2.5rem 3rem 4rem;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 2.5rem 3rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.75rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .welcome-text p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .welcome-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-view-profile {
+            padding: 0.9rem 2rem;
+            background: linear-gradient(135deg, var(--accent), #6366F1);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-view-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+        .stat-icon.green { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+        .stat-icon.orange { background: linear-gradient(135deg, #FED7AA, #FDBA74); }
+        .stat-icon.purple { background: linear-gradient(135deg, #E9D5FF, #D8B4FE); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.positive { color: var(--success); }
+        .stat-change.negative { color: var(--danger); }
+
+        /* Tabs */
+        .tabs-container {
+            margin-bottom: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab.active {
+            color: var(--accent);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .tab:hover {
+            color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Appointments Section */
+        .appointments-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .appointment-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 2rem;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .appointment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        .appointment-time-badge {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), #6366F1);
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .appointment-time-badge .time {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .appointment-time-badge .date {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .appointment-patient-info {
+            flex: 1;
+        }
+
+        .patient-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .patient-details {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .appointment-status-badge {
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+            color: #92400E;
+        }
+
+        .status-confirmed {
+            background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+            color: #065F46;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+            color: #1E40AF;
+        }
+
+        .appointment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-approve,
+        .btn-reject,
+        .btn-view-patient {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-approve {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-reject {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #DC2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-view-patient {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-view-patient:hover {
+            background: #4338CA;
+            transform: translateY(-2px);
+        }
+
+        /* Patients List */
+        .patients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .patient-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .patient-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent);
+        }
+
+        .patient-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #6366F1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        }
+
+        .patient-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .patient-card .patient-info {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .patient-card .btn-view-details {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent), #6366F1);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .patient-card .btn-view-details:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.25rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: var(--bg-light);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #EF4444;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .info-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .info-section {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        .info-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .info-item-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .info-item-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 20px;
+            border: 2px dashed var(--border);
+        }
+
+        .empty-icon {
+            font-size: 4.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.25;
+        }
+
+        .empty-text {
+            font-size: 1.15rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .welcome-section {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .appointment-card {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .patients-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">Heal<span>Smart</span></a>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'doctor_dashboard' %}" class="active">Dashboard</a></li>
+                <li><a href="{% url 'doctor_appointments' %}">Appointments</a></li>
+                <li><a href="{% url 'doctor_patients' %}">Patients</a></li>
+            </ul>
+            <div class="nav-right">
+                <button class="notification-btn" title="Notifications">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge">{{ pending_appointments_count|default:"0" }}</span>
+                </button>
+                <div class="user-badge" title="Dr. {{ doctor.user.full_name }}" onclick="openDoctorProfileModal()" >
+                    <div class="user-avatar">{{ doctor.user.full_name.0|upper|default:"D" }}</div>
+                    <span class="user-name">Dr. {{ doctor.user.full_name|default:"Doctor" }}</span>
+                </div>
+                <a href="{% url 'logout' %}" class="btn-logout" title="Logout from HealSmart">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-text">
+                <h1>Welcome, Dr. {{ doctor.user.full_name|default:"Doctor" }}! 👨‍⚕️</h1>
+                <p>{{ doctor.specialization|default:"Medical Specialist" }} • {{ doctor.clinic_name|default:"HealSmart Medical Center" }}</p>
+            </div>
+            <div class="welcome-actions">
+                <button class="btn-view-profile" onclick="openDoctorProfileModal()">View Profile</button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue">👥</div>
+                </div>
+                <div class="stat-value">{{ total_patients|default:"0" }}</div>
+                <div class="stat-label">Total Patients</div>
+                <div class="stat-change positive">↑ 12% from last month</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green">📅</div>
+                </div>
+                <div class="stat-value">{{ today_appointments_count|default:"0" }}</div>
+                <div class="stat-label">Today's Appointments</div>
+                <div class="stat-change positive">{{ confirmed_today_count|default:"0" }} confirmed</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon orange">⏰</div>
+                </div>
+                <div class="stat-value">{{ pending_appointments_count|default:"0" }}</div>
+                <div class="stat-label">Pending Approvals</div>
+                <div class="stat-change">Needs action</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon purple">✅</div>
+                </div>
+                <div class="stat-value">{{ completed_appointments_count|default:"0" }}</div>
+                <div class="stat-label">Completed (This Month)</div>
+                <div class="stat-change positive">↑ 8% from last month</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('pending')">Pending Appointments ({{ pending_appointments_count|default:"0" }})</button>
+                <button class="tab" onclick="switchTab('today')">Today's Appointments</button>
+                <button class="tab" onclick="switchTab('upcoming')">Upcoming</button>
+                <button class="tab" onclick="switchTab('previous')">Previous</button>
+                <button class="tab" onclick="switchTab('completed')">Completed ({{ completed_appointments_count|default:"0" }})</button>
+                <button class="tab" onclick="switchTab('cancelled')">Cancelled ({{ cancelled_appointments_count|default:"0" }})</button>
+                <button class="tab" onclick="switchTab('patients')">All Patients</button>
+            </div>
+
+            <!-- Pending Appointments Tab -->
+            <div id="pending-tab" class="tab-content active">
+                <div class="appointments-grid">
+                    {% for appointment in pending_appointments %}
+                    <div class="appointment-card">
+                        <div class="appointment-time-badge">
+                            <span class="time">{{ appointment.appointment_time }}</span>
+                            <span class="date">{{ appointment.appointment_date|date:"M d" }}</span>
+                        </div>
+                        <div class="appointment-patient-info">
+                            <div class="patient-name">{{ appointment.patient.user.full_name }}</div>
+                            <div class="patient-details">
+                                <span>📧 {{ appointment.patient.user.email }}</span>
+                                <span>📞 {{ appointment.patient.emergency_contact }}</span>
+                            </div>
+                            <div class="patient-details" style="margin-top: 0.5rem;">
+                                <span><strong>Reason:</strong> {{ appointment.reason_for_visit }}</span>
+                            </div>
+                        </div>
+                        <span class="appointment-status-badge status-pending">Pending</span>
+                        <div class="appointment-actions">
+                            <button class="btn-approve" onclick="approveAppointment({{ appointment.id }})">✓ Booked</button>
+                            <button class="btn-reject" onclick="rejectAppointment({{appointment.id }})">✗ Cancelled</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <p class="empty-text">No pending appointments</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Today's Appointments Tab -->
+            <div id="today-tab" class="tab-content">
+                <div class="appointments-grid">
+                    {% for appointment in today_appointments %}
+                    <div class="appointment-card">
+                        <div class="appointment-time-badge">
+                            <span class="time">{{ appointment.appointment_time }}</span>
+                            <span class="date">Today</span>
+                        </div>
+                        <div class="appointment-patient-info">
+                            <div class="patient-name">{{ appointment.patient.user.full_name }}</div>
+                            <div class="patient-details">
+                                <span>📧 {{ appointment.patient.user.email }}</span>
+                                <span>🩸 {{ appointment.patient.blood_group|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                        <span class="appointment-status-badge status-confirmed">Confirmed</span>
+                        <div class="appointment-actions">
+                            <button class="btn-view-patient" onclick="viewPatientDetails({{ appointment.patient.id }})">View Patient</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <p class="empty-text">No appointments scheduled for today</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments Tab -->
+            <div id="upcoming-tab" class="tab-content">
+                <div class="appointments-grid">
+                    {% for appointment in upcoming_appointments %}
+                    <div class="appointment-card">
+                        <div class="appointment-time-badge">
+                            <span class="time">{{ appointment.appointment_time }}</span>
+                            <span class="date">{{ appointment.appointment_date|date:"M d" }}</span>
+                        </div>
+                        <div class="appointment-patient-info">
+                            <div class="patient-name">{{ appointment.patient.user.full_name }}</div>
+                            <div class="patient-details">
+                                <span>📧 {{ appointment.patient.user.email }}</span>
+                                <span>🩸 {{ appointment.patient.blood_group|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                        <span class="appointment-status-badge status-confirmed">Confirmed</span>
+                        <div class="appointment-actions">
+                            <button class="btn-view-patient" onclick="viewPatientDetails({{ appointment.patient.id }})">View Patient</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <p class="empty-text">No upcoming appointments</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Previous Appointments Tab -->
+            <div id="previous-tab" class="tab-content">
+                <div class="appointments-grid">
+                    {% for appointment in previous_appointments %}
+                    <div class="appointment-card">
+                        <div class="appointment-time-badge" style="background: linear-gradient(135deg, #64748B, #475569);">
+                            <span class="time">{{ appointment.appointment_time }}</span>
+                            <span class="date">{{ appointment.appointment_date|date:"M d" }}</span>
+                        </div>
+                        <div class="appointment-patient-info">
+                            <div class="patient-name">{{ appointment.patient.user.full_name }}</div>
+                            <div class="patient-details">
+                                <span>📧 {{ appointment.patient.user.email }}</span>
+                            </div>
+                        </div>
+                        <span class="appointment-status-badge status-completed">Completed</span>
+                        <div class="appointment-actions">
+                            <button class="btn-view-patient" onclick="viewPatientDetails({{ appointment.patient.id }})">View Patient</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <p class="empty-text">No previous appointments</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Completed Appointments Tab -->
+            <div id="completed-tab" class="tab-content">
+                <div class="appointments-grid">
+                    {% for appointment in completed_appointments %}
+                    <div class="appointment-card">
+                        <div class="appointment-time-badge" style="background: linear-gradient(135deg, #10B981, #059669);">
+                            <span class="time">{{ appointment.appointment_time }}</span>
+                            <span class="date">{{ appointment.appointment_date|date:"M d" }}</span>
+                        </div>
+                        <div class="appointment-patient-info">
+                            <div class="patient-name">{{ appointment.patient.user.full_name }}</div>
+                            <div class="patient-details">
+                                <span>📧 {{ appointment.patient.user.email }}</span>
+                            </div>
+                            {% if appointment.notes %}
+                            <div class="patient-details" style="margin-top: 0.5rem;">
+                                <span><strong>Notes:</strong> {{ appointment.notes }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <span class="appointment-status-badge status-completed">Completed</span>
+                        <div class="appointment-actions">
+                            <button class="btn-view-patient" onclick="viewPatientDetails({{ appointment.patient.id }})">View Patient</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <p class="empty-text">No completed appointments yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Cancelled Appointments Tab -->
+            <div id="cancelled-tab" class="tab-content">
+                <div class="appointments-grid">
+                    {% for appointment in cancelled_appointments %}
+                    <div class="appointment-card">
+                        <div class="appointment-time-badge" style="background: linear-gradient(135deg, #EF4444, #DC2626);">
+                            <span class="time">{{ appointment.appointment_time }}</span>
+                            <span class="date">{{ appointment.appointment_date|date:"M d" }}</span>
+                        </div>
+                        <div class="appointment-patient-info">
+                            <div class="patient-name">{{ appointment.patient.user.full_name }}</div>
+                            <div class="patient-details">
+                                <span>📧 {{ appointment.patient.user.email }}</span>
+                            </div>
+                        </div>
+                        <span class="appointment-status-badge" style="background: linear-gradient(135deg, #FEE2E2, #FECACA); color: #991B1B;">Cancelled</span>
+                        <div class="appointment-actions">
+                            <button class="btn-view-patient" onclick="viewPatientDetails({{ appointment.patient.id }})">View Patient</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-icon">🚫</div>
+                        <p class="empty-text">No cancelled appointments</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- All Patients Tab -->
+            <div id="patients-tab" class="tab-content">
+                <div class="patients-grid">
+                    {% for patient in all_patients %}
+                    <div class="patient-card" onclick="viewPatientDetails({{ patient.id }})">
+                        <div class="patient-avatar-large">
+                            {{ patient.user.full_name.0|upper }}
+                        </div>
+                        <h3>{{ patient.user.full_name }}</h3>
+                        <div class="patient-info">
+                            <div>📧 {{ patient.user.email }}</div>
+                            <div>🩸 Blood Group: {{ patient.blood_group|default:"N/A" }}</div>
+                            <div>📅 Age: {{ patient.age|default:"N/A" }}</div>
+                        </div>
+                        <button class="btn-view-details">View Full Details</button>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">👥</div>
+                        <p class="empty-text">No patients yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Profile Modal -->
+    <div class="modal" id="doctorProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Doctor Profile</h3>
+                <button class="modal-close" onclick="closeDoctorProfileModal()">×</button>
+            </div>
+            <div class="info-sections">
+                <div class="info-section">
+                    <div class="info-section-title">
+                        <span>👨‍⚕️</span> Professional Information
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-item-label">Full Name</span>
+                            <span class="info-item-value">Dr. {{ doctor.user.full_name|default:"Not Set" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Email</span>
+                            <span class="info-item-value">{{ doctor.user.email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Specialization</span>
+                            <span class="info-item-value">{{ doctor.specialization|default:"Not Set" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Qualifications</span>
+                            <span class="info-item-value">{{ doctor.qualifications|default:"Not Set" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Experience</span>
+                            <span class="info-item-value">{{ doctor.years_of_experience|default:"Not Set" }} years</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Hospital/Clinic</span>
+                            <span class="info-item-value">{{ doctor.clinic_name|default:"Not Set" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div class="modal" id="patientDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Patient Details</h3>
+                <button class="modal-close" onclick="closePatientDetailsModal()">×</button>
+            </div>
+            <div id="patientDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Doctor Profile Modal
+        function openDoctorProfileModal() {
+            document.getElementById('doctorProfileModal').classList.add('show');
+        }
+
+        function closeDoctorProfileModal() {
+            document.getElementById('doctorProfileModal').classList.remove('show');
+        }
+
+        // Patient Details Modal
+        function viewPatientDetails(patientId) {
+            fetch(`/doctor/patient-details/${patientId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const patient = data.patient;
+                        document.getElementById('patientDetailsContent').innerHTML = `
+                            <div class="info-sections">
+                                <div class="info-section">
+                                    <div class="info-section-title">
+                                        <span>📋</span> Personal Information
+                                    </div>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="info-item-label">Full Name</span>
+                                            <span class="info-item-value">${patient.full_name}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Email</span>
+                                            <span class="info-item-value">${patient.email}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Blood Group</span>
+                                            <span class="info-item-value">${patient.blood_group || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Age</span>
+                                            <span class="info-item-value">${patient.age || 'N/A'} years</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Emergency Contact</span>
+                                            <span class="info-item-value">${patient.emergency_contact || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Reason for Visit</span>
+                                            <span class="info-item-value">${patient.reason_for_visit || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Appointment Date</span>
+                                            <span class="info-item-value">${patient.appointment_date || 'N/A'}</span>
+                                        </div>
+
+                                        <div class="info-item">
+                                            <span class="info-item-label">Appointment Time</span>
+                                            <span class="info-item-value">${patient.appointment_time || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('patientDetailsModal').classList.add('show');
+                    } else {
+                        alert('Failed to load patient details');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading patient details');
+                });
+        }
+
+        function closePatientDetailsModal() {
+            document.getElementById('patientDetailsModal').classList.remove('show');
+        }
+
+        // Approve Appointment
+        function approveAppointment(appointmentId) {
+            if (confirm('Confirm this appointment?')) {
+                fetch(`/doctor/appointment/${appointmentId}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Appointment approved successfully!');
+                        location.reload();
+                    } else {
+                        alert('❌ Failed to approve appointment');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error approving appointment');
+                });
+            }
+        }
+
+        // Reject Appointment
+        function rejectAppointment(appointmentId) {
+            if (confirm('Are you sure you want to reject this appointment?')) {
+                fetch(`/doctor/appointment/${appointmentId}/reject/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Appointment rejected');
+                        location.reload();
+                    } else {
+                        alert('Failed to reject appointment');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error rejecting appointment');
+                });
+            }
+        }
+        
+        function completeAppointment(id){
+            fetch(`/doctor/mark-appointment-completed/${id}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify({})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success){
+                    location.reload();
+                }
+            });
+        }
+        
+
+        // Close modals on outside click
+        document.getElementById('doctorProfileModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDoctorProfileModal();
+        });
+
+        document.getElementById('patientDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) closePatientDetailsModal();
+        });
+    </script>
+</body>
+</html>

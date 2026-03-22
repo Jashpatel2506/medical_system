@@ -1,0 +1,784 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Appointments - HealSmart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A2540;
+            --secondary: #00D4FF;
+            --accent: #5469FF;
+            --teal: #14B8A6;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --bg-light: #F1F5F9;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(to bottom, #E0F2FE 0%, #F1F5F9 100%);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation (Same as dashboard) */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a.active {
+            color: var(--accent);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1.25rem 0.5rem 0.5rem;
+            background: linear-gradient(135deg, var(--teal), #0D9488);
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+
+        .user-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: white;
+            color: var(--teal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .logout-btn {
+            padding: 0.65rem 1.5rem;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Main Content */
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem 3rem;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* Section Styling */
+        .appointment-section {
+            margin-bottom: 3.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-count {
+            background: var(--bg-light);
+            color: var(--text-light);
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .appointments-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        /* Appointment Card (Same as dashboard for consistency) */
+        .appointment-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 2rem;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .appointment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .time-badge {
+            padding: 1.25rem;
+            border-radius: 14px;
+            color: white;
+            text-align: center;
+            min-width: 100px;
+            font-weight: 700;
+        }
+
+        .pending-bg { background: linear-gradient(135deg, var(--warning), #D97706); }
+        .upcoming-bg { background: linear-gradient(135deg, var(--accent), #4338CA); }
+        .completed-bg { background: linear-gradient(135deg, var(--success), #059669); }
+        .cancelled-bg { background: linear-gradient(135deg, var(--danger), #B91C1C); }
+
+        .time-badge .time { font-size: 1.2rem; display: block; }
+        .time-badge .date { font-size: 0.8rem; opacity: 0.9; font-weight: 500; }
+
+        .patient-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .patient-info {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-booked { background: #D1FAE5; color: #065F46; }
+        .status-completed { background: #DBEAFE; color: #1E40AF; }
+        .status-cancelled { background: #FEE2E2; color: #991B1B; }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 992px) {
+            .appointment-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1rem;
+            }
+            .patient-info { justify-content: center; }
+            .actions { justify-content: center; }
+        }
+
+        /* Modal (Copied from dashboard) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.25rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: var(--bg-light);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #EF4444;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .info-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .info-section {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        .info-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .info-item-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .info-item-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">Heal<span>Smart</span></a>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'doctor_dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'doctor_appointments' %}" class="active">Appointments</a></li>
+                <li><a href="{% url 'doctor_patients' %}">Patients</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="user-badge" title="Dr. {{ doctor.user.full_name }}" onclick="openDoctorProfileModal()">
+                    <div class="user-avatar">{{ doctor.user.full_name.0|upper }}</div>
+                    <span class="user-name">Dr. {{ doctor.user.full_name }}</span>
+                </div>
+                <a href="{% url 'logout' %}" class="logout-btn" title="Logout from HealSmart">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <header class="page-header">
+            <h1>All Appointments</h1>
+            <p>Track and manage your patient schedule</p>
+        </header>
+
+        <!-- Pending Section -->
+        <section class="appointment-section">
+            <h2 class="section-title">
+                ⏳ Pending Approvals <span class="section-count">{{ pending_count }}</span>
+            </h2>
+            <div class="appointments-grid">
+                {% for appt in pending_appointments %}
+                <div class="appointment-card">
+                    <div class="time-badge pending-bg">
+                        <span class="time">{{ appt.appointment_time }}</span>
+                        <span class="date">{{ appt.appointment_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div>
+                        <div class="patient-name">{{ appt.patient.user.full_name }}</div>
+                        <div class="patient-info">
+                            <span>📧 {{ appt.patient.user.email }}</span>
+                            <span>📞 {{ appt.patient.emergency_contact }}</span>
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                            <strong>Reason:</strong> {{ appt.reason_for_visit }}
+                        </div>
+                    </div>
+                    <span class="status-badge status-pending">Pending</span>
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="updateStatus({{ appt.id }}, 'approve')">Approve</button>
+                        <button class="btn btn-danger" onclick="updateStatus({{ appt.id }}, 'reject')">Reject</button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">No pending appointments found</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Upcoming Section -->
+        <section class="appointment-section">
+            <h2 class="section-title">
+                📅 Upcoming Appointments <span class="section-count">{{ upcoming_count }}</span>
+            </h2>
+            <div class="appointments-grid">
+                {% for appt in upcoming_appointments %}
+                <div class="appointment-card">
+                    <div class="time-badge upcoming-bg">
+                        <span class="time">{{ appt.appointment_time }}</span>
+                        <span class="date">{{ appt.appointment_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div>
+                        <div class="patient-name">{{ appt.patient.user.full_name }}</div>
+                        <div class="patient-info">
+                            <span>📧 {{ appt.patient.user.email }}</span>
+                            <span>🩸 {{ appt.patient.blood_group|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                    <span class="status-badge status-booked">Booked</span>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="viewPatientDetails({{ appt.patient.id }})">View Details</button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">No upcoming appointments found</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Completed Section -->
+        <section class="appointment-section">
+            <h2 class="section-title">
+                ✅ Completed Appointments <span class="section-count">{{ completed_count }}</span>
+            </h2>
+            <div class="appointments-grid">
+                {% for appt in completed_appointments %}
+                <div class="appointment-card">
+                    <div class="time-badge completed-bg">
+                        <span class="time">{{ appt.appointment_time }}</span>
+                        <span class="date">{{ appt.appointment_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div>
+                        <div class="patient-name">{{ appt.patient.user.full_name }}</div>
+                        <div class="patient-info">
+                            <span>📧 {{ appt.patient.user.email }}</span>
+                        </div>
+                        {% if appt.notes %}
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-light);">
+                            <strong>Notes:</strong> {{ appt.notes }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <span class="status-badge status-completed">Completed</span>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="viewPatientDetails({{ appt.patient.id }})">view Details</button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">No completed appointments found</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Cancelled Section -->
+        <section class="appointment-section">
+            <h2 class="section-title">
+                🚫 Cancelled Appointments <span class="section-count">{{ cancelled_count }}</span>
+            </h2>
+            <div class="appointments-grid">
+                {% for appt in cancelled_appointments %}
+                <div class="appointment-card">
+                    <div class="time-badge cancelled-bg">
+                        <span class="time">{{ appt.appointment_time }}</span>
+                        <span class="date">{{ appt.appointment_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div>
+                        <div class="patient-name">{{ appt.patient.user.full_name }}</div>
+                        <div class="patient-info">
+                            <span>📧 {{ appt.patient.user.email }}</span>
+                        </div>
+                    </div>
+                    <span class="status-badge status-cancelled">Cancelled</span>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="viewPatientDetails({{ appt.patient.id }})"> view Details</button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">No cancelled appointments found</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <!-- Doctor Profile Modal -->
+    <div class="modal" id="doctorProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Doctor Profile</h3>
+                <button class="modal-close" onclick="closeDoctorProfileModal()">×</button>
+            </div>
+            <div class="info-sections">
+                <div class="info-section">
+                    <div class="info-section-title">
+                        <span>👨‍⚕️</span> Professional Information
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-item-label">Full Name</span>
+                            <span class="info-item-value">Dr. {{ doctor.user.full_name|default:"Not Set" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Email</span>
+                            <span class="info-item-value">{{ doctor.user.email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Specialization</span>
+                            <span class="info-item-value">{{ doctor.specialization|default:"Not Set" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Qualifications</span>
+                            <span class="info-item-value">{{ doctor.qualifications|default:"Not Set" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Experience</span>
+                            <span class="info-item-value">{{ doctor.years_of_experience|default:"Not Set" }} years</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-item-label">Hospital/Clinic</span>
+                            <span class="info-item-value">{{ doctor.clinic_name|default:"Not Set" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div class="modal" id="patientDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Patient Details</h3>
+                <button class="modal-close" onclick="closePatientDetailsModal()">×</button>
+            </div>
+            <div id="patientDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openDoctorProfileModal() {
+            document.getElementById('doctorProfileModal').classList.add('show');
+        }
+
+        function closeDoctorProfileModal() {
+            document.getElementById('doctorProfileModal').classList.remove('show');
+        }
+
+        function viewPatientDetails(patientId) {
+            fetch(`/doctor/patient-details/${patientId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const patient = data.patient;
+                        document.getElementById('patientDetailsContent').innerHTML = `
+                            <div class="info-sections">
+                                <div class="info-section">
+                                    <div class="info-section-title">
+                                        <span>📋</span> Personal Information
+                                    </div>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="info-item-label">Full Name</span>
+                                            <span class="info-item-value">${patient.full_name}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Email</span>
+                                            <span class="info-item-value">${patient.email}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Blood Group</span>
+                                            <span class="info-item-value">${patient.blood_group || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Age</span>
+                                            <span class="info-item-value">${patient.age || 'N/A'} years</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Emergency Contact</span>
+                                            <span class="info-item-value">${patient.emergency_contact || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Reason for Visit</span>
+                                            <span class="info-item-value">${patient.reason_for_visit || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Appointment Date</span>
+                                            <span class="info-item-value">${patient.appointment_date || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-item-label">Appointment Time</span>
+                                            <span class="info-item-value">${patient.appointment_time || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('patientDetailsModal').classList.add('show');
+                    } else {
+                        alert('Failed to load patient details');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading patient details');
+                });
+        }
+
+        function closePatientDetailsModal() {
+            document.getElementById('patientDetailsModal').classList.remove('show');
+        }
+
+        // Close modal on outside click
+        document.getElementById('patientDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) closePatientDetailsModal();
+        });
+
+        document.getElementById('doctorProfileModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDoctorProfileModal();
+        });
+
+        function updateStatus(id, action) {
+            const url = action === 'approve' ? `/doctor/appointment/${id}/approve/` : `/doctor/appointment/${id}/reject/`;
+            if (confirm(`Are you sure you want to ${action} this appointment?`)) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Operation failed');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

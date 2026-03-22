@@ -1,14 +1,14 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealSmart - AI Symptom Checker</title>
+    <title>Chat with HealSmart | HealthPredict</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -18,213 +18,124 @@
 
         :root {
             --primary: #0A2540;
-            --accent: #5469FF;
             --secondary: #00D4FF;
+            --accent: #5469FF;
             --text-dark: #1A1A1A;
             --text-light: #6B7280;
             --bg-light: #F9FAFB;
             --white: #FFFFFF;
-            --border: #E5E7EB;
-            --hover-bg: #F3F4F6;
-            --sidebar-width: 280px;
+            --success: #10B981;
+            --chat-bg: #F0F9FF;
         }
 
         body {
             font-family: 'DM Sans', sans-serif;
-            background: var(--bg-light);
+            line-height: 1.6;
             color: var(--text-dark);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .app-container {
-            display: flex;
-            height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--primary);
+            background: var(--bg-light);
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
+            min-height: 100vh;
         }
 
-        .sidebar.hidden {
-            transform: translateX(-100%);
+        /* Navigation (Reused) */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .sidebar-header {
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .brand {
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.2rem 3rem;
             display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .brand-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .brand-text {
-            flex: 1;
-        }
-
-        .brand-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
-            font-weight: 900;
-            color: var(--white);
-        }
-
-        .brand-tagline {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .new-chat-btn {
-            width: 100%;
-            padding: 0.85rem;
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-            box-shadow: 0 4px 15px rgba(84, 105, 255, 0.3);
-            transition: all 0.3s;
-        }
-
-        .new-chat-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(84, 105, 255, 0.4);
-        }
-
-        .sidebar-description {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.5);
-            padding: 1rem 0.75rem 0.5rem;
-            line-height: 1.5;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .chat-history {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        .history-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.5);
-            padding: 0.5rem 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .history-item {
-            padding: 0.85rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            color: rgba(255, 255, 255, 0.7);
+            align-items: center;
         }
 
-        .history-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--white);
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
         }
 
-        .history-item.active {
-            background: rgba(84, 105, 255, 0.3);
-            border-left: 3px solid var(--accent);
-            color: var(--white);
+        .logo span {
+            color: var(--accent);
         }
 
-        .history-text {
-            flex: 1;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .history-actions {
-            display: none;
-        }
-
-        .history-item:hover .history-actions {
+        .nav-links {
             display: flex;
+            gap: 2.5rem;
+            list-style: none;
         }
 
-        .history-action-btn {
-            padding: 0.25rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: rgba(255, 255, 255, 0.5);
-            border-radius: 4px;
-            transition: all 0.2s;
+        .nav-links a {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            position: relative;
         }
 
-        .history-action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: var(--white);
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
         }
 
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        .nav-links a:hover::after {
+            width: 100%;
         }
 
-        .user-profile {
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-badge {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.75rem;
-            border-radius: 8px;
-            color: var(--white);
+            padding: 0.5rem 1.25rem 0.5rem 0.5rem;
+            background: linear-gradient(135deg, var(--accent), #6366F1);
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .user-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            color: white;
+            background: white;
+            color: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 1rem;
-            box-shadow: 0 4px 12px rgba(84, 105, 255, 0.3);
-        }
-
-        .user-info {
-            flex: 1;
+            font-weight: 700;
+            font-size: 0.95rem;
         }
 
         .user-name {
@@ -232,641 +143,845 @@
             font-size: 0.95rem;
         }
 
-        .user-email {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--white);
-        }
-
-        .top-nav {
-            height: 70px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            background: var(--white);
-            position: relative;
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .menu-toggle {
-            padding: 0.6rem;
-            background: none;
+        .btn-logout {
+            padding: 0.65rem 1.5rem;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white !important;
             border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            color: var(--text-dark);
-            border-radius: 8px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .menu-toggle:hover {
-            background: var(--hover-bg);
-        }
-
-        .chat-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-info-nav {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            background: var(--bg-light);
-        }
-
-        .user-avatar-nav {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name-nav {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-dark);
-        }
-
-        .user-email-nav {
-            font-size: 0.75rem;
-            color: var(--text-light);
-        }
-
-        .logout-btn {
-            padding: 0.6rem 1.5rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logout-btn:hover {
-            background: var(--accent);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(84, 105, 255, 0.3);
-        }
-
-        /* Dropdown Menu */
-        .dropdown-menu {
-            position: absolute;
-            top: 70px;
-            left: 2rem;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            min-width: 220px;
-            z-index: 1000;
-            display: none;
-            opacity: 0;
-            transform: translateY(-10px);
             transition: all 0.3s;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .dropdown-item {
-            padding: 0.85rem 1.25rem;
-            color: var(--text-dark);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-            border-bottom: 1px solid var(--border);
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+            line-height: 1;
+        }
+        
+        .btn-logout::after {
+            display: none !important;
         }
 
-        .dropdown-item:last-child {
-            border-bottom: none;
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
 
-        .dropdown-item:hover {
-            background: var(--bg-light);
-            color: var(--accent);
-        }
-
-        .dropdown-item svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* Chat Messages */
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .welcome-screen {
-            max-width: 700px;
-            margin: auto;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .welcome-icon {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 2rem;
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            box-shadow: 0 10px 40px rgba(84, 105, 255, 0.3);
-        }
-
-        .welcome-screen h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .welcome-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-light);
-            line-height: 1.6;
-        }
-
-        /* Messages */
-        .message {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.user {
-            flex-direction: row-reverse;
-        }
-
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .message.bot .message-avatar {
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            color: white;
-            box-shadow: 0 4px 12px rgba(84, 105, 255, 0.3);
-        }
-
-        .message.user .message-avatar {
-            background: var(--bg-light);
-            color: var(--text-dark);
-        }
-
-        .message-content {
-            max-width: 65%;
-        }
-
-        .message-bubble {
-            padding: 1.25rem 1.5rem;
-            border-radius: 18px;
-            line-height: 1.7;
-            font-size: 0.95rem;
-        }
-
-        .message.bot .message-bubble {
-            background: var(--bg-light);
-            color: var(--text-dark);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.user .message-bubble {
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            color: white;
-            border-bottom-right-radius: 4px;
-            box-shadow: 0 4px 15px rgba(84, 105, 255, 0.25);
-        }
-
-        .message-time {
-            font-size: 0.75rem;
-            color: var(--text-light);
-            margin-top: 0.5rem;
-            padding: 0 0.5rem;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
-            display: none;
-        }
-
-        .typing-indicator.show {
-            display: flex;
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 0.3rem;
-            padding: 1.25rem 1.5rem;
-            background: var(--bg-light);
-            border-radius: 18px;
-            border-bottom-left-radius: 4px;
-        }
-
-        .typing-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: var(--text-light);
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-                opacity: 0.7;
-            }
-            30% {
-                transform: translateY(-12px);
-                opacity: 1;
-            }
-        }
-
-        /* Chat Input */
-        .chat-input-container {
-            padding: 1.5rem 2rem;
-            border-top: 1px solid var(--border);
-            background: var(--white);
-        }
-
-        .input-wrapper {
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .chat-input {
-            width: 100%;
-            padding: 1.25rem 4rem 1.25rem 1.5rem;
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            font-family: inherit;
-            font-size: 0.95rem;
-            outline: none;
-            resize: none;
-            max-height: 200px;
-            transition: all 0.3s;
-            line-height: 1.6;
-        }
-
-        .chat-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(84, 105, 255, 0.1);
-        }
-
-        .send-btn {
-            position: absolute;
-            right: 0.75rem;
-            bottom: 0.75rem;
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--secondary));
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(84, 105, 255, 0.3);
-        }
-
-        .send-btn:hover:not(:disabled) {
-            transform: scale(1.08);
-            box-shadow: 0 6px 16px rgba(84, 105, 255, 0.4);
-        }
-
-        .send-btn:disabled {
-            background: var(--border);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* Scrollbar */
-        .chat-messages::-webkit-scrollbar,
-        .chat-history::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track,
-        .chat-history::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb,
-        .chat-history::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 10px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb:hover,
-        .chat-history::-webkit-scrollbar-thumb:hover {
-            background: var(--text-light);
-        }
-
-        /* Mobile */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                z-index: 1000;
-                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            }
-
-            .message-content {
-                max-width: 85%;
-            }
-
-            .top-nav {
-                padding: 0 1rem;
-            }
-
-            .chat-input-container {
-                padding: 1rem;
-            }
-
-            .welcome-screen h1 {
-                font-size: 2rem;
-            }
-
-            .user-details {
-                display: none;
-            }
-        }
-
-        .mobile-overlay {
+        /* Modal Styles */
+        .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s;
         }
 
-        .mobile-overlay.show {
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #F3F4F6;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.25rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: var(--bg-light);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #EF4444;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .info-sections {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .info-section {
+            border-bottom: 2px solid #F3F4F6;
+            padding-bottom: 1.5rem;
+        }
+
+        .info-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .info-item-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .info-item-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Chat Layout */
+        main {
+            flex: 1;
+            padding: 100px 1.5rem 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(10, 37, 64, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            min-height: 500px;
+            border: 1px solid rgba(84, 105, 255, 0.1);
+        }
+
+        .chat-header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-title h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.2rem;
+            line-height: 1.2;
+        }
+
+        .chat-title p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chat-status {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background: var(--chat-bg);
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bot {
+            align-self: flex-start;
+        }
+
+        .message-user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+
+        .message-bot .message-avatar {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .message-user .message-avatar {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .message-content {
+            padding: 1rem 1.2rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message-bot .message-content {
+            background: var(--white);
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .message-user .message-content {
+            background: var(--accent);
+            color: var(--white);
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(84, 105, 255, 0.2);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            margin-top: 0.4rem;
             display: block;
+        }
+
+        .message-bot .message-time {
+            color: var(--text-light);
+        }
+
+        .message-user .message-time {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: right;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.4rem;
+            padding: 0.5rem 0;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .chat-input-area {
+            padding: 1.5rem 2rem;
+            background: var(--white);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .chat-input-wrapper {
+            flex: 1;
+            background: var(--bg-light);
+            border-radius: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(84, 105, 255, 0.1);
+        }
+
+        .chat-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 0.8rem 0.5rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: var(--text-dark);
+            resize: none;
+            max-height: 120px;
+            min-height: 24px;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .btn-send {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(84, 105, 255, 0.3);
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            background: var(--primary);
+            box-shadow: 0 6px 20px rgba(10, 37, 64, 0.3);
+        }
+
+        .btn-send svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            margin-left: -2px;
+        }
+
+        /* Footer (Reused) */
+        footer {
+            background: var(--primary);
+            color: var(--white);
+            padding: 60px 3rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .footer-quote {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: #38bdf8 !important;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-quote span {
+            display: block;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: #7dd3fc;
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+
+        .footer-brand p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--white);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            main {
+                padding: 90px 1rem 1rem;
+            }
+
+            .chat-container {
+                height: 85vh;
+                border-radius: 12px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="brand">
-                    <div class="brand-icon">🏥</div>
-                    <div class="brand-text">
-                        <div class="brand-name">HealSmart</div>
-                        <div class="brand-tagline">AI Health Assistant</div>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">Heal<span>Smart</span></a>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'patient_dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'all_doctors' %}">Doctors</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="user-badge" onclick="openPatientInfoModal()">
+                    <div class="user-avatar">{{ user.full_name|first|upper|default:"P" }}</div>
+                    <span class="user-name">{{ user.full_name|default:"Patient" }}</span>
+                </div>
+                <a href="{% url 'logout' %}" class="btn-logout" title="Logout from HealSmart">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Chat Area -->
+    <main>
+        <div class="chat-container">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-title">
+                    <h2>HealSmart AI Assistant</h2>
+                    <p><span class="chat-status"></span> Online | Ready to help</p>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Bot Welcome Message -->
+                <div class="message message-bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        Hello! I am HealSmart AI. Please type your symptoms (e.g., "I have a headache, fever, and
+                        nausea") and I will help predict possible conditions.
+                        <span class="message-time">Just now</span>
                     </div>
                 </div>
-                <button class="new-chat-btn" onclick="startNewChat()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
+
+                <!-- Example User Message -->
+                <!--
+                <div class="message message-user">
+                    <div class="message-avatar">👤</div>
+                    <div class="message-content">
+                        I've been feeling very tired lately and have a slight cough.
+                        <span class="message-time">10:45 AM</span>
+                    </div>
+                </div>
+                -->
+
+                <!-- Example Bot Response with typing indicator hidden by default -->
+                <!--
+                <div class="message message-bot" id="typing-indicator" style="display: none;">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+                -->
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <input type="text" class="chat-input" id="user-input" placeholder="Type your symptoms here..."
+                        autocomplete="off">
+                </div>
+                <button class="btn-send" id="send-btn" aria-label="Send message">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
                     </svg>
-                    New Chat
                 </button>
             </div>
+        </div>
+    </main>
 
-            <div class="sidebar-description">
-                Your intelligent medical companion for symptom analysis and health guidance.
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h3>HealSmart</h3>
+                <p>Virtual Assistant for Diagnosis & Guide — Your AI-powered healthcare companion for intelligent
+                    medical insights.</p>
+                <p class="footer-quote">
+                    “आरोग्य परमं धनम्”<br>
+                    <span>Health is the greatest wealth.</span>
+                </p>
             </div>
 
-            <div class="chat-history" id="chatHistory">
-                <div class="history-label">Recent Chats</div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Diagnosis</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
             </div>
-
-            <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar">{{ user.full_name.0|upper }}</div>
-                    <div class="user-info">
-                        <div class="user-name">{{ user.full_name }}</div>
-                        <div class="user-email">{{ user.email }}</div>
-                    </div>
-                </div>
+            <div class="footer-section">
+                <h4>Key Features</h4>
+                <ul>
+                    <li><a href="#">AI-Based Disease Prediction</a></li>
+                    <li><a href="#">Symptom-Based Analysis</a></li>
+                    <li><a href="#">Doctor Recommendations</a></li>
+                    <li><a href="#">Personalized Diet Plans</a></li>
+                    <li><a href="#">Disease-Specific Yoga Asanas</a></li>
+                </ul>
             </div>
-        </aside>
+            <div class="footer-section">
+                <h4>Support & Help</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 HealthPredict. All rights reserved.</p>
+        </div>
+    </footer>
 
-        <!-- Mobile Overlay -->
-        <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
+    <!-- Basic Chat Interaction Script (Optional, for demo) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sendBtn = document.getElementById("send-btn");
+            const userInput = document.getElementById("user-input");
+            const chatMessages = document.getElementById("chat-messages");
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <nav class="top-nav">
-                <div class="nav-left">
-                    <button class="menu-toggle" onclick="toggleMenu()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
-                    <span class="chat-title">Symptom Checker</span>
-                </div>
+            // Generate a random session ID for this tab
+            const sessionId = Math.random().toString(36).substring(2, 15);
 
-                <!-- Dropdown Menu -->
-                <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="{% url 'home' %}" class="dropdown-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                        </svg>
-                        Home
-                    </a>
-                    <a href="{% url 'patient_page' %}" class="dropdown-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        Personal Information
-                    </a>
-                    <a href="#" class="dropdown-item" onclick="showAbout(); return false;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                        </svg>
-                        About HealSmart
-                    </a>
-                </div>
+            function formatTime() {
+                const now = new Date();
+                return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
 
-                <div class="nav-right">
-                    <div class="user-info-nav">
-                        <div class="user-avatar">{{ user.full_name.0|upper }}</div>
-                        <div class="user-name">{{ user.full_name }}</div>
-                        <div class="user-email">{{ user.email }}</div>
-                    </div>
-                    <form method="POST" action="{% url 'logout' %}" style="margin: 0;">
-                        {% csrf_token %}
-                        <button type="submit" class="logout-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                <polyline points="16 17 21 12 16 7"></polyline>
-                                <line x1="21" y1="12" x2="9" y2="12"></line>
-                            </svg>
-                            Logout
-                        </button>
-                    </form>
-                </div>
-            </nav>
+            function addMessage(text, isUser, isHtml = false) {
+                const msgDiv = document.createElement("div");
+                msgDiv.classList.add("message", isUser ? "message-user" : "message-bot");
 
-            <div class="chat-messages" id="chatMessages">
-                <div class="welcome-screen" id="welcomeScreen">
-                    <div class="welcome-icon">🏥</div>
-                    <h1>Welcome to HealSmart</h1>
-                    <p class="welcome-subtitle">I'm your AI health assistant. Describe your symptoms in detail, and I'll help you understand what might be happening and provide personalized recommendations.</p>
-                </div>
+                const avatar = document.createElement("div");
+                avatar.classList.add("message-avatar");
+                avatar.innerText = isUser ? "👤" : "🤖";
 
-                <div class="typing-indicator" id="typingIndicator">
+                const content = document.createElement("div");
+                content.classList.add("message-content");
+
+                if (isHtml) {
+                    content.innerHTML = text; // Allow HTML from the backend (like list formatting, bold text)
+                } else {
+                    content.innerText = text;
+                }
+
+                const timeSpan = document.createElement("span");
+                timeSpan.classList.add("message-time");
+                timeSpan.innerText = formatTime();
+
+                content.appendChild(timeSpan);
+                msgDiv.appendChild(avatar);
+                msgDiv.appendChild(content);
+
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            async function handleSend() {
+                const text = userInput.value.trim();
+                if (!text) return;
+
+                addMessage(text, true);
+                userInput.value = "";
+
+                // Show typing indicator
+                const typingDiv = document.createElement("div");
+                typingDiv.classList.add("message", "message-bot");
+                typingDiv.innerHTML = `
                     <div class="message-avatar">🤖</div>
-                    <div class="typing-dots">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                `;
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                try {
+                    // Send to Flask backend
+                    const response = await fetch('/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: text, session_id: sessionId }),
+                    });
+
+                    const data = await response.json();
+
+                    // Remove typing indicator
+                    typingDiv.remove();
+
+                    // Add bot response
+                    addMessage(data.response, false, true);
+
+                } catch (error) {
+                    console.error("Error communicating with AI:", error);
+                    typingDiv.remove();
+                    addMessage("Sorry, I am having trouble connecting to the server.", false);
+                }
+            }
+
+            sendBtn.addEventListener("click", handleSend);
+            userInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    handleSend();
+                }
+            });
+        });
+    </script>
+    <!-- Patient Info Modal -->
+    <div class="modal" id="patientInfoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Patient Information</h3>
+                <button class="modal-close" onclick="closePatientInfoModal()">×</button>
+            </div>
+
+            <div class="info-sections">
+                <div class="info-section">
+                    <div class="info-section-title"><span>📋</span> Personal Information</div>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="info-item-label">Full Name</span><span class="info-item-value">{{ user.full_name|default:"Not Set" }}</span></div>
+                        <div class="info-item"><span class="info-item-label">Email</span><span class="info-item-value">{{ user.email }}</span></div>
+                        <div class="info-item"><span class="info-item-label">Date of Birth</span><span class="info-item-value">{{ user.dob|date:"d M Y"|default:"Not Set" }}</span></div>
+                        <div class="info-item"><span class="info-item-label">Age</span><span class="info-item-value">{{ patient.age|default:"Not Set" }} years</span></div>
+                        <div class="info-item"><span class="info-item-label">Blood Group</span><span class="info-item-value">{{ patient.blood_group|default:"Not Set" }}</span></div>
+                        <div class="info-item"><span class="info-item-label">Emergency Contact</span><span class="info-item-value">{{ patient.emergency_contact|default:"Not Set" }}</span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <div class="info-section-title"><span>📊</span> Health Metrics</div>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="info-item-label">Height</span><span class="info-item-value">{{ patient.height_cm|default:"Not Set" }} cm</span></div>
+                        <div class="info-item"><span class="info-item-label">Weight</span><span class="info-item-value">{{ patient.weight_kg|default:"Not Set" }} kg</span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <div class="info-section-title"><span>🏥</span> Medical History</div>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="info-item-label">Allergies</span><span class="info-item-value">{{ patient.allergies|default:"None" }}</span></div>
+                        <div class="info-item"><span class="info-item-label">Chronic Diseases</span><span class="info-item-value">{{ patient.chronic_diseases|default:"None" }}</span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <div class="info-section-title"><span>📅</span> Registration</div>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="info-item-label">Patient ID</span><span class="info-item-value">#P{{ user.id|stringformat:"04d" }}</span></div>
+                        <div class="info-item"><span class="info-item-label">Registered Since</span><span class="info-item-value">{{ patient.created_at|date:"d M Y"|default:"Not Available" }}</span></div>
                     </div>
                 </div>
             </div>
-
-            <div class="chat-input-container">
-                <div class="input-wrapper">
-                    <textarea 
-                        id="chatInput" 
-                        class="chat-input" 
-                        placeholder="Describe your symptoms in detail..."
-                        rows="1"
-                        onkeydown="handleKeyPress(event)"
-                    ></textarea>
-                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
 
     <script>
-        // Toggle Menu
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            menu.classList.toggle('show');
-        }
-
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('dropdownMenu');
-            const toggle = document.querySelector('.menu-toggle');
-            
-            if (!menu.contains(event.target) && !toggle.contains(event.target)) {
-                menu.classList.remove('show');
-            }
-        });
-
-        // Show About
-        function showAbout() {
-            alert('HealSmart - AI-Powered Health Assistant\n\nVersion 1.0\n\nYour intelligent medical companion for symptom analysis and health guidance.\n\nDeveloped with ❤️ for better healthcare access.');
-            document.getElementById('dropdownMenu').classList.remove('show');
-        }
-
-        // Toggle Sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            
-            sidebar.classList.toggle('hidden');
-            overlay.classList.toggle('show');
-        }
+        function openPatientInfoModal() { document.getElementById('patientInfoModal').classList.add('show'); }
+        function closePatientInfoModal() { document.getElementById('patientInfoModal').classList.remove('show'); }
+        document.getElementById('patientInfoModal').addEventListener('click', function(e) { if (e.target === this) closePatientInfoModal(); });
     </script>
-    <script src="{% static 'js/chat.js' %}"></script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 # doctors/models.py
 from django.db import models
 from users.models import User
+
+
 class Doctor(models.Model):
     user = models.OneToOneField(
         User,

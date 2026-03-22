@@ -18,9 +18,9 @@ def login_view(request):
                 request.session["full_name"] = user.full_name   # ADD THIS
 
                 if user.role == "Patient":
-                    return redirect("patient_chat")
+                    return redirect("patient_dashboard")
                 elif user.role == "Doctor":
-                    return redirect("doctor")
+                    return redirect("doctor_dashboard")
 
             else:
                 return render(request, "login/login.html", {
@@ -52,6 +52,12 @@ def signin_view(request):
             return render(request, "login/signin.html", {
                 "error": "Email already registered"
             })
+        # ❌ check if phone number has at least 10 digits
+        if not phone or len(phone) < 10:
+            return render(request, "login/signin.html", {
+                "error": "Phone number must be at least 10 digits"
+            })
+
         # ✅ Check if phone already exists
         if User.objects.filter(phone_number=phone).exists():
             return render(request, "login/signin.html", {
