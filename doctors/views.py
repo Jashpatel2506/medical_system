@@ -28,7 +28,13 @@ def doctor_page(request):
         doctor.clinic_name = request.POST.get("clinic_name")
         doctor.save()
 
-        return redirect("doctor")
+        if not doctor.is_approved:
+            request.session.flush()
+            return render(request, "login/login.html", {
+                "success_msg": "Registration successful! Your professional details have been saved. Please wait for admin approval before logging in."
+            })
+
+        return redirect("doctor_dashboard")
 
 
     return render(request, "doctor/doctor.html", {
@@ -69,6 +75,10 @@ def doctor_dashboard(request):
         
         if not doctor:
             logger.error(f"Doctor profile not found for user {user.id}")
+            return redirect("login")
+            
+        if not doctor.is_approved:
+            request.session.flush()
             return redirect("login")
         
         today = date.today()
@@ -158,12 +168,18 @@ def doctor_dashboard(request):
         ).order_by('-appointment_date', '-appointment_time')
 
 
-        # Cancelled appointments (within last week)
         cancelled_appointments = Appointment.objects.filter(
             doctor=doctor,
             status='Cancelled',
             appointment_date__gte=last_week
         ).select_related('patient__user').order_by('-appointment_date', '-appointment_time')
+
+        for appt in cancelled_appointments:
+            if "\n\n[CANCEL_REASON]" in appt.reason_for_visit:
+                parts = appt.reason_for_visit.split("\n\n[CANCEL_REASON]")
+                appt.cancel_reason = parts[1]
+            else:
+                appt.cancel_reason = "No reason provided."
 
         cancelled_appointments_count = cancelled_appointments.count()
 
@@ -208,6 +224,10 @@ def doctor_appointments(request):
         doctor = Doctor.objects.filter(user=user).first()
         
         if not doctor:
+            return redirect("login")
+            
+        if not doctor.is_approved:
+            request.session.flush()
             return redirect("login")
 
         today = date.today()
@@ -357,7 +377,13 @@ def reject_appointment(request, appointment_id):
             status='Pending'
         )
         
+        # Get reason from request if provided
+        data = json.loads(request.body)
+        reason = data.get('reason', '')
+        
         appointment.status = 'Cancelled'
+        if reason:
+            appointment.reason_for_visit = appointment.reason_for_visit + f"\n\n[CANCEL_REASON]{reason}"
         appointment.save()
         
         logger.info(f"Doctor {doctor.user.full_name} rejected appointment {appointment_id}")
@@ -431,6 +457,10 @@ def doctor_patients(request):
     except (User.DoesNotExist, Doctor.DoesNotExist):
         messages.error(request, "Access denied. Doctor profile not found.")
         return redirect('signin')
+        
+    if not doctor.is_approved:
+        request.session.flush()
+        return redirect("login")
 
     # Get all unique patients who have appointments with this doctor
     all_patients = Patient.objects.filter(

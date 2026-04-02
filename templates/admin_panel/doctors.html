@@ -168,7 +168,7 @@
                     </td>
                     <td>{{ doctor.created_at|date:"M d, Y" }}</td>
                     <td>
-                        <button class="action-btn" onclick="openDoctorModal('{{ doctor.name|escapejs }}', '{{ doctor.specialization|default:'General'|escapejs }}', '{{ doctor.user.phone_number|escapejs }}', '{{ doctor.user.email|escapejs }}', '{{ doctor.qualifications|default:'MBBS'|escapejs }}', '{{ doctor.years_of_experience|default:'N/A'|escapejs }}', '{{ doctor.clinic_name|default:'Not specified'|escapejs }}')">View Details</button>
+                        <button class="action-btn" onclick="openDoctorModal('{{ doctor.name|escapejs }}', '{{ doctor.specialization|default:'General'|escapejs }}', '{{ doctor.user.phone_number|escapejs }}', '{{ doctor.user.email|escapejs }}', '{{ doctor.qualifications|default:'MBBS'|escapejs }}', '{{ doctor.years_of_experience|default:'N/A'|escapejs }}', '{{ doctor.clinic_name|default:'Not specified'|escapejs }}', '{% if doctor.certificate_file %}{{ doctor.certificate_file.url|escapejs }}{% endif %}', '{% if doctor.license_file %}{{ doctor.license_file.url|escapejs }}{% endif %}')">View Details</button>
                     </td>
                 </tr>
                 {% empty %}
@@ -219,6 +219,14 @@
                 <span class="detail-label">Clinic / Hospital</span>
                 <span class="detail-value" id="modal-doctor-clinic">-</span>
             </div>
+            <div class="detail-group">
+                <span class="detail-label">Certificate</span>
+                <span class="detail-value" id="modal-doctor-certificate">-</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">License</span>
+                <span class="detail-value" id="modal-doctor-license">-</span>
+            </div>
         </div>
     </div>
 </div>
@@ -226,7 +234,7 @@
 
 {% block extra_js %}
 <script>
-    function openDoctorModal(name, specialization, phone, email, qualifications, experience, clinic) {
+    function openDoctorModal(name, specialization, phone, email, qualifications, experience, clinic, certificateUrl, licenseUrl) {
         document.getElementById('modal-doctor-name').textContent = 'Dr. ' + name;
         document.getElementById('modal-doctor-specialization').textContent = specialization;
         document.getElementById('modal-doctor-phone').textContent = phone;
@@ -234,6 +242,20 @@
         document.getElementById('modal-doctor-qualifications').textContent = qualifications;
         document.getElementById('modal-doctor-experience').textContent = experience !== 'N/A' ? experience + ' yrs' : 'N/A';
         document.getElementById('modal-doctor-clinic').textContent = clinic;
+        
+        const certEl = document.getElementById('modal-doctor-certificate');
+        if (certificateUrl) {
+            certEl.innerHTML = `<a href="${certificateUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View Certificate</a>`;
+        } else {
+            certEl.textContent = 'Not uploaded';
+        }
+
+        const licEl = document.getElementById('modal-doctor-license');
+        if (licenseUrl) {
+            licEl.innerHTML = `<a href="${licenseUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View License</a>`;
+        } else {
+            licEl.textContent = 'Not uploaded';
+        }
         
         document.getElementById('doctorModal').classList.add('show');
     }

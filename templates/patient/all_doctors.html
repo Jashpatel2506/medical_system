@@ -19,6 +19,9 @@
             --text-light: #64748B;
             --bg-light: #F1F5F9;
             --white: #FFFFFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
             --border: #E2E8F0;
         }
         body {
@@ -221,6 +224,77 @@
             .search-form { flex-direction: column; }
             .search-input-group { width: 100%; flex-direction: column; }
         }
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: var(--white);
+            padding: 60px 3rem 2rem;
+            margin-top: auto;
+        }
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+        }
+        .footer-brand h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        .footer-quote {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: #38bdf8 !important;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        .footer-quote span {
+            display: block;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: #7dd3fc;
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+        .footer-brand p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        .footer-section h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-section a:hover {
+            color: var(--white);
+        }
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -228,17 +302,14 @@
         <div class="nav-container">
             <a href="{% url 'home' %}" class="logo">Heal<span>Smart</span></a>
             <ul class="nav-links">
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'patient_chat' %}">Diagnosis</a></li>
                 <li><a href="{% url 'patient_dashboard' %}">Dashboard</a></li>
                 <li><a href="{% url 'all_doctors' %}" class="active">Doctors</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
+                <li><a href="{% url 'patient_chat' %}">Diagnosis</a></li>
+                
+                
+                
             </ul>
             <div class="nav-right">
-                <button class="notification-btn" title="Notifications">
-                    <span class="notification-icon">🔔</span>
-                    <span class="notification-badge">{{ notifications_count|default:"0" }}</span>
-                </button>
                 <div class="user-badge" onclick="openPatientInfoModal()">
                     <div class="user-avatar">{{ user.full_name|first|upper|default:"P" }}</div>
                     <span class="user-name">{{ user.full_name|default:"Patient" }}</span>
@@ -372,7 +443,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Patient Information</h3>
-                <button class="modal-close" onclick="closePatientInfoModal()">×</button>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <a href="{% url 'patient_page' %}" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, var(--teal), #0D9488); color: white; border-radius: 12px; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                        </svg>
+                        Edit Profile
+                    </a>
+                    <button class="modal-close" onclick="closePatientInfoModal()">×</button>
+                </div>
             </div>
 
             <div class="info-sections">
@@ -459,6 +539,68 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h3>HealSmart</h3>
+                <p>Virtual Assistant for Diagnosis & Guide — Your AI-powered healthcare companion for intelligent medical insights.</p>
+                <p class="footer-quote">
+                    “आरोग्य परमं धनम्”<br>
+                    <span>Health is the greatest wealth.</span>
+                </p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Diagnosis</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Key Features</h4>
+                <ul>
+                    <li><a href="#">AI-Based Disease Prediction</a></li>
+                    <li><a href="#">Symptom-Based Analysis</a></li>
+                    <li><a href="#">Doctor Recommendations</a></li>
+                    <li><a href="#">Personalized Diet Plans</a></li>
+                    <li><a href="#">Disease-Specific Yoga Asanas</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support & Help</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 HealthPredict. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Generic Alert Modal -->
+    <div class="modal" id="genericAlertModal">
+        <div class="modal-content" style="max-width: 400px; padding: 2.5rem; text-align: center;">
+            <div id="alertIconContainer" style="font-size: 3.5rem; margin-bottom: 1rem;">
+                <!-- Icon injected via JS -->
+            </div>
+            <h3 class="modal-title" id="genericAlertTitle" style="font-size: 1.6rem; color: var(--primary); margin-bottom: 1rem;">Alert</h3>
+            
+            <div id="genericAlertMessage" style="color: var(--text-light); font-size: 1.05rem; margin-bottom: 2rem;">
+                <!-- Message injected via JS -->
+            </div>
+            
+            <button onclick="closeGenericAlert()" id="genericAlertOkBtn" style="padding: 0.8rem 2rem; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, var(--accent), #6366F1); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: all 0.3s; width: 100%;">OK</button>
+        </div>
+    </div>
+
     <script>
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('appointmentDate').setAttribute('min', today);
@@ -484,6 +626,39 @@
             document.getElementById('bookingForm').reset();
         }
 
+        let alertCallback = null;
+
+        function showCustomAlert(title, message, type = 'info', callback = null) {
+            alertCallback = callback;
+            document.getElementById('genericAlertTitle').innerText = title;
+            document.getElementById('genericAlertMessage').innerText = message;
+            
+            const iconContainer = document.getElementById('alertIconContainer');
+            if (type === 'success') {
+                iconContainer.innerHTML = '✅';
+                document.getElementById('genericAlertOkBtn').style.background = 'linear-gradient(135deg, var(--success), #059669)';
+                document.getElementById('genericAlertOkBtn').style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+            } else if (type === 'error') {
+                iconContainer.innerHTML = '❌';
+                document.getElementById('genericAlertOkBtn').style.background = 'linear-gradient(135deg, var(--danger), #DC2626)';
+                document.getElementById('genericAlertOkBtn').style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+            } else {
+                iconContainer.innerHTML = 'ℹ️';
+                document.getElementById('genericAlertOkBtn').style.background = 'linear-gradient(135deg, var(--accent), #6366F1)';
+                document.getElementById('genericAlertOkBtn').style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+            }
+            
+            document.getElementById('genericAlertModal').classList.add('show');
+        }
+
+        function closeGenericAlert() {
+            document.getElementById('genericAlertModal').classList.remove('show');
+            if (alertCallback) {
+                alertCallback();
+                alertCallback = null;
+            }
+        }
+
         function submitBooking(event) {
             event.preventDefault();
             const data = {
@@ -504,11 +679,12 @@
             .then(r => r.json())
             .then(res => {
                 if(res.success) {
-                    alert("✅ Appointment Booked Successfully");
                     closeBookingModal();
-                    window.location.href = "{% url 'patient_dashboard' %}";
+                    showCustomAlert('Booked', 'Appointment booked successfully', 'success', function() {
+                        window.location.href = "{% url 'patient_dashboard' %}";
+                    });
                 } else {
-                    alert("❌ Booking Failed");
+                    showCustomAlert('Error', 'Booking Failed', 'error');
                 }
             });
         }
@@ -518,6 +694,9 @@
         });
         document.getElementById('patientInfoModal').addEventListener('click', function(e) {
             if (e.target === this) closePatientInfoModal();
+        });
+        document.getElementById('genericAlertModal').addEventListener('click', function(e) {
+            if (e.target === this) closeGenericAlert();
         });
     </script>
 </body>

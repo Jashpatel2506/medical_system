@@ -874,6 +874,111 @@
             }
         }
 
+        /* Custom Alert Modal */
+        .alert-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .alert-modal.show {
+            display: flex;
+        }
+
+        .alert-modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem 3rem;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .alert-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 900;
+            margin-bottom: 0.75rem;
+        }
+
+        .alert-title.success {
+            color: #059669;
+        }
+
+        .alert-title.error {
+            color: #DC2626;
+        }
+
+        .alert-message {
+            font-size: 1.05rem;
+            color: var(--text-light);
+            margin-bottom: 1.75rem;
+            line-height: 1.6;
+        }
+
+        .alert-btn {
+            padding: 0.9rem 2.5rem;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+
+        .alert-btn.success {
+            background: linear-gradient(135deg, #059669, #10B981);
+            box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+        }
+
+        .alert-btn.success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
+        }
+
+        .alert-btn.error {
+            background: linear-gradient(135deg, #DC2626, #EF4444);
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+        }
+
+        .alert-btn.error:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
+        }
+
+        .alert-divider {
+            height: 4px;
+            border-radius: 2px;
+            margin: 0 auto 1.5rem;
+            width: 60px;
+        }
+
+        .alert-divider.success {
+            background: linear-gradient(135deg, #059669, #10B981);
+        }
+
+        .alert-divider.error {
+            background: linear-gradient(135deg, #DC2626, #EF4444);
+        }
+
         /* Floating AI Chat Button */
         .ai-chat-btn {
             position: fixed;
@@ -919,6 +1024,77 @@
                 height: 26px;
             }
         }
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: var(--white);
+            padding: 60px 3rem 2rem;
+            margin-top: auto;
+        }
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+        }
+        .footer-brand h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        .footer-quote {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: #38bdf8 !important;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        .footer-quote span {
+            display: block;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: #7dd3fc;
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+        .footer-brand p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        .footer-section h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-section a:hover {
+            color: var(--white);
+        }
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -927,17 +1103,14 @@
         <div class="nav-container">
             <a href="{% url 'home' %}" class="logo">Heal<span>Smart</span></a>
             <ul class="nav-links">
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'patient_chat' %}">Diagnosis</a></li>
+               
+               
                 <li><a href="{% url 'patient_dashboard' %}" class="active">Dashboard</a></li>
                 <li><a href="{% url 'all_doctors' %}">Doctors</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
+                 <li><a href="{% url 'patient_chat' %}">Diagnosis</a></li>
+                
             </ul>
             <div class="nav-right">
-                <button class="notification-btn">
-                    <span class="notification-icon">🔔</span>
-                    <span class="notification-badge">{{ notifications_count|default:"0" }}</span>
-                </button>
                 <div class="user-badge" onclick="openPatientInfoModal()">
                     <div class="user-avatar">{{ user.full_name.0|upper|default:"P" }}</div>
                     <span class="user-name">{{ user.full_name|default:"Patient" }}</span>
@@ -1095,6 +1268,57 @@
 
             </div>
 
+        <!-- Pending Appointments -->
+        <div class="appointments-section">
+            <div class="section-header">
+                <h2 class="section-title">Pending Appointments</h2>
+                <span class="view-all-link" style="color: #D97706;">{{ pending_count }} pending</span>
+            </div>
+
+            <div class="appointments-grid">
+
+            {% for appointment in pending_appointments %}
+
+            <div class="appointment-card">
+
+            <div class="appointment-left">
+            <div class="appointment-details">
+
+            <div class="appointment-doctor">
+            Dr. {{ appointment.doctor.user.full_name }}
+            </div>
+
+            <div class="appointment-specialty">
+            {{ appointment.doctor.specialization }}
+            </div>
+
+            <div class="appointment-datetime">
+            <span>📅 {{ appointment.appointment_date }}</span>
+            <span>🕐 {{ appointment.appointment_time }}</span>
+            </div>
+
+            </div>
+            </div>
+
+            <div class="appointment-actions">
+            <span class="appointment-status" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #B45309;">{{ appointment.status }}</span>
+            </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-state">
+            <div class="empty-icon">⏳</div>
+            <p class="empty-text">No pending appointments</p>
+            </div>
+
+            {% endfor %}
+
+            </div>
+
+            </div>
+
         <!-- Completed Appointments -->
         <div class="appointments-section">
             <div class="section-header">
@@ -1175,6 +1399,12 @@
             <span>🕐 {{ appointment.appointment_time }}</span>
             </div>
 
+            {% if appointment.cancel_reason %}
+            <div class="appointment-reason" style="margin-top: 10px; font-size: 0.9rem; color: #DC2626;">
+                <strong>Reason for cancellation:</strong> {{ appointment.cancel_reason }}
+            </div>
+            {% endif %}
+
             </div>
             </div>
 
@@ -1206,7 +1436,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Patient Information</h3>
-                <button class="modal-close" onclick="closePatientInfoModal()">×</button>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <a href="{% url 'patient_page' %}" class="btn-book" style="padding: 0.5rem 1rem; font-size: 0.85rem; text-decoration: none;">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                        </svg>
+                        Edit Profile
+                    </a>
+                    <button class="modal-close" onclick="closePatientInfoModal()">×</button>
+                </div>
             </div>
 
             <div class="info-sections">
@@ -1294,14 +1533,66 @@
     </div>
 
     <!-- Floating AI Chat Button -->
-    <a href="{% url 'patient_chat' %}" class="ai-chat-btn" title="AI Health Assistant">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 8h-1V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h1.49l2 3a1 1 0 0 0 .83.45h5.36a1 1 0 0 0 .83-.45l2-3H19a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2zm-9-2h4v2h-4V6zm7 10h-2.17a1 1 0 0 0-.83.45l-2 3v-3.45h-4V19l-2-3a1 1 0 0 0-.83-.45H5v-6h14v6z"/>
-            <circle cx="8" cy="12" r="1.5"/>
-            <circle cx="16" cy="12" r="1.5"/>
-            <path d="M10 15h4v1h-4z"/>
-        </svg>
+    <a href="{% url 'patient_chat' %}" class="ai-chat-btn" title="AI Health Assistant" style="font-size:1.75rem; text-decoration:none;">
+        🤖
     </a>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h3>HealSmart</h3>
+                <p>Virtual Assistant for Diagnosis & Guide — Your AI-powered healthcare companion for intelligent medical insights.</p>
+                <p class="footer-quote">
+                    “आरोग्य परमं धनम्”<br>
+                    <span>Health is the greatest wealth.</span>
+                </p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Diagnosis</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Key Features</h4>
+                <ul>
+                    <li><a href="#">AI-Based Disease Prediction</a></li>
+                    <li><a href="#">Symptom-Based Analysis</a></li>
+                    <li><a href="#">Doctor Recommendations</a></li>
+                    <li><a href="#">Personalized Diet Plans</a></li>
+                    <li><a href="#">Disease-Specific Yoga Asanas</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support & Help</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 HealthPredict. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Custom Alert Modal -->
+    <div class="alert-modal" id="customAlertModal">
+        <div class="alert-modal-content">
+            <div class="alert-icon" id="alertIcon"></div>
+            <div class="alert-divider" id="alertDivider"></div>
+            <h3 class="alert-title" id="alertTitle"></h3>
+            <p class="alert-message" id="alertMessage"></p>
+            <button class="alert-btn" id="alertBtn" onclick="closeCustomAlert()">OK</button>
+        </div>
+    </div>
 
     <!-- Booking Modal -->
     <div class="modal" id="bookingModal">
@@ -1411,7 +1702,7 @@
 
                     if(result.success){
 
-                        alert("✅ Appointment Booked Successfully");
+                        showCustomAlert('success', 'Booking Confirmed!', 'Your appointment has been booked successfully.');
 
                         closeBookingModal();
 
@@ -1419,7 +1710,7 @@
 
                     }else{
 
-                        alert("❌ Booking Failed");
+                        showCustomAlert('error', 'Booking Failed', 'This time slot is already booked. Please choose a different time.');
 
                     }
 
@@ -1437,6 +1728,36 @@
 
         document.getElementById('bookingModal').addEventListener('click', function(e) {
             if (e.target === this) closeBookingModal();
+        });
+
+        // Custom Alert Modal Functions
+        let alertTimeout = null;
+
+        function showCustomAlert(type, title, message) {
+            const modal = document.getElementById('customAlertModal');
+            const icon = document.getElementById('alertIcon');
+            const divider = document.getElementById('alertDivider');
+            const titleEl = document.getElementById('alertTitle');
+            const msgEl = document.getElementById('alertMessage');
+            const btn = document.getElementById('alertBtn');
+
+            icon.textContent = type === 'success' ? '✅' : '❌';
+            titleEl.textContent = title;
+            titleEl.className = 'alert-title ' + type;
+            msgEl.textContent = message;
+            divider.className = 'alert-divider ' + type;
+            btn.className = 'alert-btn ' + type;
+
+            modal.classList.add('show');
+        }
+
+        function closeCustomAlert() {
+            if (alertTimeout) clearTimeout(alertTimeout);
+            document.getElementById('customAlertModal').classList.remove('show');
+        }
+
+        document.getElementById('customAlertModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCustomAlert();
         });
     </script>
 </body>

@@ -561,16 +561,14 @@
             </div>
 
             {% if error %}
-            <div style="padding: 0.65rem 0.85rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; border-radius: 8px; color: #EF4444; font-size: 0.85rem; margin-bottom: 0.8rem;">
-                {{ error }}
-            </div>
+            <div id="serverErrorMessage" data-error="{{ error }}" style="display: none;"></div>
             {% endif %}
 
             <div class="success-message" id="successMessage">
                 Account created successfully!
             </div>
 
-            <form class="signup-form" method="POST" action="{% url 'signin' %}">
+            <form class="signup-form" method="POST" action="{% url 'signin' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="role-group">
                     <label class="role-group-label">I am a</label>
@@ -670,6 +668,7 @@
                         name="dob" 
                         class="form-input" 
                         required
+                        max="{{ eighteen_years_ago }}"
                     >
                 </div>
 
@@ -716,6 +715,33 @@
                     </div>
                 </div>
 
+                <div id="doctor-fields" style="display: none; flex-direction: column; gap: 1rem;">
+                    <div class="form-group has-label">
+                        <label for="certificate" class="form-label">Medical Certificate (PDF/Image)</label>
+                        <span class="input-icon">📜</span>
+                        <input 
+                            type="file" 
+                            id="certificate" 
+                            name="certificate_file" 
+                            class="form-input" 
+                            accept=".pdf,image/*"
+                            style="padding-top: 0.5rem;"
+                        >
+                    </div>
+                    <div class="form-group has-label">
+                        <label for="license" class="form-label">Medical License (PDF/Image)</label>
+                        <span class="input-icon">🏥</span>
+                        <input 
+                            type="file" 
+                            id="license" 
+                            name="license_file" 
+                            class="form-input" 
+                            accept=".pdf,image/*"
+                            style="padding-top: 0.5rem;"
+                        >
+                    </div>
+                </div>
+
                 <div class="form-group has-label">
                     <label for="password" class="form-label">Password</label>
                     <span class="input-icon">🔒</span>
@@ -725,6 +751,7 @@
                         name="password" 
                         class="form-input" 
                         placeholder="Create a password"
+                        minlength="8"
                         required
                     >
                     <button type="button" class="password-toggle" id="togglePassword">
@@ -748,6 +775,7 @@
                         name="confirmPassword" 
                         class="form-input" 
                         placeholder="Re-enter your password"
+                        minlength="8"
                         required
                     >
                     <button type="button" class="password-toggle" id="toggleConfirmPassword">
@@ -772,6 +800,29 @@
     </div>
 
     <script>
+        // Role Toggle
+        const patientRadio = document.getElementById('patient');
+        const doctorRadio = document.getElementById('doctor');
+        const doctorFields = document.getElementById('doctor-fields');
+        const certInput = document.getElementById('certificate');
+        const licenseInput = document.getElementById('license');
+
+        function toggleDoctorFields() {
+            if (doctorRadio.checked) {
+                doctorFields.style.display = 'flex';
+                certInput.required = true;
+                licenseInput.required = true;
+            } else {
+                doctorFields.style.display = 'none';
+                certInput.required = false;
+                licenseInput.required = false;
+            }
+        }
+
+        patientRadio.addEventListener('change', toggleDoctorFields);
+        doctorRadio.addEventListener('change', toggleDoctorFields);
+        toggleDoctorFields(); // Initialize on load
+        
         // Password Toggle
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('password');
@@ -812,16 +863,82 @@
             }
         });
 
-        // Form Submission - Phone number validation
+        // Handle Server-side errors via bubbles
+        const serverErrorDiv = document.getElementById('serverErrorMessage');
+        if (serverErrorDiv) {
+            const errorMsg = serverErrorDiv.getAttribute('data-error');
+            if (errorMsg) {
+                // Try to find the most relevant field
+                let targetInput = document.getElementById('email'); // Default
+                if (errorMsg.toLowerCase().includes('phone')) targetInput = document.getElementById('phone');
+                if (errorMsg.toLowerCase().includes('password')) targetInput = document.getElementById('password');
+                if (errorMsg.toLowerCase().includes('age') || errorMsg.toLowerCase().includes('birth')) targetInput = document.getElementById('birthdate');
+                
+                targetInput.setCustomValidity(errorMsg);
+                targetInput.reportValidity();
+            }
+        }
+
+        // Form Submission - Validations
         const signupForm = document.querySelector('.signup-form');
         signupForm.addEventListener('submit', function(e) {
-            const phone = document.getElementById('phone').value.replace(/\D/g, '');
+            // Reset custom validities
+            document.querySelectorAll('.form-input').forEach(input => input.setCustomValidity(''));
+
+            // Phone validation
+            const phoneInput = document.getElementById('phone');
+            const phone = phoneInput.value.replace(/\D/g, '');
             if (phone.length < 10) {
+                phoneInput.setCustomValidity('⚠️ Phone number must be at least 10 digits!');
+                phoneInput.reportValidity();
                 e.preventDefault();
-                alert('⚠️ Phone number must be at least 10 digits!');
-                document.getElementById('phone').focus();
                 return false;
             }
+
+            // Password Match validation
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (password !== confirmPassword) {
+                confirmPasswordInput.setCustomValidity("⚠️ Passwords do not match!");
+                confirmPasswordInput.reportValidity();
+                e.preventDefault();
+                return false;
+            }
+
+            // Password Complexity validation
+            const complexityRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+            if (!complexityRegex.test(password)) {
+                passwordInput.setCustomValidity("⚠️ Password must be at least 8 characters long and contain at least one letter, one number, and one special character!");
+                passwordInput.reportValidity();
+                e.preventDefault();
+                return false;
+            }
+
+            // Age validation (18+)
+            const birthdateInput = document.getElementById('birthdate');
+            const dob = new Date(birthdateInput.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            if (age < 18) {
+                birthdateInput.setCustomValidity("⚠️ You must be at least 18 years old to register!");
+                birthdateInput.reportValidity();
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Clear custom validity on input
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.setCustomValidity('');
+            });
         });
         
 

@@ -399,7 +399,7 @@
             </div>
             {% empty %}
             <div class="empty-appointments">
-                No recent appointments found.
+                No appointments scheduled for today.
             </div>
             {% endfor %}
         </div>
@@ -430,16 +430,130 @@
             </div>
         </div>
 
-        <div class="chart-title">WEEKLY TREND</div>
+        <div class="chart-title">WEEKLY TREND (CURRENT WEEK)</div>
         <div class="chart-container">
-            <div class="bar" style="height: 30%;"><div class="bar-label">Mon</div></div>
-            <div class="bar" style="height: 45%;"><div class="bar-label">Tue</div></div>
-            <div class="bar" style="height: 25%;"><div class="bar-label">Wed</div></div>
-            <div class="bar" style="height: 60%;"><div class="bar-label">Thu</div></div>
-            <div class="bar" style="height: 50%;"><div class="bar-label">Fri</div></div>
-            <div class="bar active" style="height: 90%;"><div class="bar-label">Sat</div></div>
-            <div class="bar" style="height: 20%;"><div class="bar-label">Sun</div></div>
+            {% for stat in weekly_stats %}
+            <div class="bar {% if stat.is_today %}active{% endif %}" style="height: {{ stat.height|floatformat:0 }}%;" title="{{ stat.count }} appointments">
+                <div class="bar-label">{{ stat.day }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <!-- Pending Doctor Approvals -->
+    <div class="panel" style="margin-top: 2rem;">
+        <div class="panel-header">
+            <div class="panel-title">
+                👨‍⚕️ Pending Doctor Approvals
+                <span class="badge-count">{{ pending_doctors|length }} pending</span>
+            </div>
+        </div>
+
+        <div class="appointment-list">
+            {% for doc in pending_doctors %}
+            <div class="appointment-item" style="grid-template-columns: 42px 1fr auto auto;">
+                <div class="apt-avatar">
+                    {{ doc.name.0|default:"D" }}
+                </div>
+                <div class="apt-info">
+                    <h4>Dr. {{ doc.name }}</h4>
+                    <p>⚕️ {{ doc.specialization|default:"Unspecified" }} • {{ doc.years_of_experience|default:"0" }} yrs exp</p>
+                </div>
+                <div class="apt-docs" style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-view-all" style="background: #E5E7EB; color: #374151; padding: 0.5rem 0.8rem; box-shadow: none;" onclick="openDoctorModal('{{ doc.name|escapejs }}', '{{ doc.specialization|default:'General'|escapejs }}', '{{ doc.user.phone_number|escapejs }}', '{{ doc.user.email|escapejs }}', '{{ doc.qualifications|default:'MBBS'|escapejs }}', '{{ doc.years_of_experience|default:'N/A'|escapejs }}', '{{ doc.clinic_name|default:'Not specified'|escapejs }}', '{% if doc.certificate_file %}{{ doc.certificate_file.url|escapejs }}{% endif %}', '{% if doc.license_file %}{{ doc.license_file.url|escapejs }}{% endif %}')">
+                        👁️ View Details
+                    </button>
+                </div>
+                <div>
+                    <form method="POST" action="{% url 'approve_doctor' doc.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-view-all" style="background: linear-gradient(135deg, var(--success), #059669); font-size: 0.85rem; padding: 0.5rem 1.2rem;">☑️ Approve</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-appointments">
+                No doctors pending approval at the moment.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Doctor Details Modal -->
+    <div id="doctorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Doctor Details</h2>
+                <button class="modal-close" onclick="closeModal('doctorModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-group">
+                    <span class="detail-label">Full Name</span>
+                    <span class="detail-value" id="modal-doctor-name">-</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Specialization</span>
+                    <span class="detail-value" id="modal-doctor-specialization">-</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Contact Number</span>
+                    <span class="detail-value" id="modal-doctor-phone">-</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Email Address</span>
+                    <span class="detail-value" id="modal-doctor-email">-</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Qualifications</span>
+                    <span class="detail-value" id="modal-doctor-qualifications">-</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Experience</span>
+                    <span class="detail-value" id="modal-doctor-experience">-</span>
+                </div>
+                <div class="detail-group full-width">
+                    <span class="detail-label">Clinic / Hospital</span>
+                    <span class="detail-value" id="modal-doctor-clinic">-</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Certificate</span>
+                    <span class="detail-value" id="modal-doctor-certificate">-</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">License</span>
+                    <span class="detail-value" id="modal-doctor-license">-</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openDoctorModal(name, specialization, phone, email, qualifications, experience, clinic, certificateUrl, licenseUrl) {
+        document.getElementById('modal-doctor-name').textContent = 'Dr. ' + name;
+        document.getElementById('modal-doctor-specialization').textContent = specialization;
+        document.getElementById('modal-doctor-phone').textContent = phone;
+        document.getElementById('modal-doctor-email').textContent = email;
+        document.getElementById('modal-doctor-qualifications').textContent = qualifications;
+        document.getElementById('modal-doctor-experience').textContent = experience !== 'N/A' ? experience + ' yrs' : 'N/A';
+        document.getElementById('modal-doctor-clinic').textContent = clinic;
+        
+        const certEl = document.getElementById('modal-doctor-certificate');
+        if (certificateUrl) {
+            certEl.innerHTML = `<a href="${certificateUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View Certificate</a>`;
+        } else {
+            certEl.textContent = 'Not uploaded';
+        }
+
+        const licEl = document.getElementById('modal-doctor-license');
+        if (licenseUrl) {
+            licEl.innerHTML = `<a href="${licenseUrl}" target="_blank" style="color: var(--accent); font-weight: 600; text-decoration: none;">View License</a>`;
+        } else {
+            licEl.textContent = 'Not uploaded';
+        }
+        
+        document.getElementById('doctorModal').classList.add('show');
+    }
+</script>
 {% endblock %}

@@ -15,6 +15,9 @@ class Doctor(models.Model):
     years_of_experience = models.IntegerField(null=True, blank=True)
     clinic_name = models.CharField(max_length=150, null=True, blank=True)
     age = models.IntegerField(null=True, blank=True)
+    certificate_file = models.FileField(upload_to='doctor_certificates/', null=True, blank=True)
+    license_file = models.FileField(upload_to='doctor_licenses/', null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

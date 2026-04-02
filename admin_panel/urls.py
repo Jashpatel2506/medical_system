@@ -7,4 +7,5 @@ urlpatterns = [
     path('doctors/', views.admin_doctors, name='admin_doctors'),
     path('appointments/', views.admin_appointments, name='admin_appointments'),
     path('medical-records/', views.admin_medical_records, name='admin_medical_records'),
+    path('approve_doctor/<int:doctor_id>/', views.approve_doctor, name='approve_doctor'),
 ]

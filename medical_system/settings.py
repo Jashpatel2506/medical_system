@@ -129,3 +129,16 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
+
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Email Settings (Using Gmail SMTP Server)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Switch to 'django.core.mail.backends.console.EmailBackend' for testing without SMTP
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your.email@gmail.com'  # <-- Fill this with your email address
+EMAIL_HOST_PASSWORD = 'your-app-password' # <-- Fill this with a 16-character App Password, NOT your regular pass
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

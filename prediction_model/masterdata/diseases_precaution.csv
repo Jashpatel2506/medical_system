@@ -1,41 +1,51 @@
-Drug Reaction,stop irritation,consult nearest hospital,stop taking drug,follow up
-Malaria,Consult nearest hospital,avoid oily food,avoid non veg food,keep mosquitos out
-Allergy,apply calamine,cover area with bandage,,use ice to compress itching
-Hypothyroidism,reduce stress,exercise,eat healthy,get proper sleep
-Psoriasis,wash hands with warm soapy water,stop bleeding using pressure,consult doctor,salt baths
-GERD,avoid fatty spicy food,avoid lying down after eating,maintain healthy weight,exercise
-Chronic cholestasis,cold baths,anti itch medicine,consult doctor,eat healthy
-hepatitis A,Consult nearest hospital,wash hands through,avoid fatty spicy food,medication
-Osteoarthristis,acetaminophen,consult nearest hospital,follow up,salt baths
-(vertigo) Paroymsal  Positional Vertigo,lie down,avoid sudden change in body,avoid abrupt head movment,relax
-Hypoglycemia,lie down on side,check in pulse,drink sugary drinks,consult doctor
-Acne,bath twice,avoid fatty spicy food,drink plenty of water,avoid too many products
-Diabetes ,have balanced diet,exercise,consult doctor,follow up
-Impetigo,soak affected area in warm water,use antibiotics,remove scabs with wet compressed cloth,consult doctor
-Hypertension ,meditation,salt baths,reduce stress,get proper sleep
-Peptic ulcer diseae,avoid fatty spicy food,consume probiotic food,eliminate milk,limit alcohol
-Dimorphic hemmorhoids(piles),avoid fatty spicy food,consume witch hazel,warm bath with epsom salt,consume alovera juice
-Common Cold,drink vitamin c rich drinks,take vapour,avoid cold food,keep fever in check
-Chicken pox,use neem in bathing ,consume neem leaves,take vaccine,avoid public places
-Cervical spondylosis,use heating pad or cold pack,exercise,take otc pain reliver,consult doctor
-Hyperthyroidism,eat healthy,massage,use lemon balm,take radioactive iodine treatment
-Urinary tract infection,drink plenty of water,increase vitamin c intake,drink cranberry juice,take probiotics
-Varicose veins,lie down flat and raise the leg high,use oinments,use vein compression,dont stand still for long
-AIDS,avoid open cuts,wear ppe if possible,consult doctor,follow up
-Paralysis (brain hemorrhage),massage,eat healthy,exercise,consult doctor
-Typhoid,eat high calorie vegitables,antiboitic therapy,consult doctor,medication
-Hepatitis B,consult nearest hospital,vaccination,eat healthy,medication
-Fungal infection,bath twice,use detol or neem in bathing water,keep infected area dry,use clean cloths
-Hepatitis C,Consult nearest hospital,vaccination,eat healthy,medication
-Migraine,meditation,reduce stress,use poloroid glasses in sun,consult doctor
-Bronchial Asthma,switch to loose cloothing,take deep breaths,get away from trigger,seek help
-Alcoholic hepatitis,stop alcohol consumption,consult doctor,medication,follow up
-Jaundice,drink plenty of water,consume milk thistle,eat fruits and high fiberous food,medication
-Hepatitis E,stop alcohol consumption,rest,consult doctor,medication
-Dengue,drink papaya leaf juice,avoid fatty spicy food,keep mosquitos away,keep hydrated
-Hepatitis D,consult doctor,medication,eat healthy,follow up
-Heart attack,call ambulance,chew or swallow asprin,keep calm,
-Pneumonia,consult doctor,medication,rest,follow up
-Arthritis,exercise,use hot and cold therapy,try acupuncture,massage
-Gastroenteritis,stop eating solid food for while,try taking small sips of water,rest,ease back into eating
-Tuberculosis,cover mouth,consult doctor,medication,rest
+Disease,Precaution1,Precaution2,Precaution3,Precaution4,Doctor
+Drug Reaction,Stop medicine immediately,Do not self-medicate,Drink water,Consult doctor,General Physician
+Malaria,Use mosquito nets,Avoid stagnant water,Take full medication,Stay hydrated,General Physician
+Allergy,Avoid allergens,Keep surroundings clean,Wear mask,Take medicine,Allergist
+Hypothyroidism,Take medicine daily,Eat healthy,Exercise,Regular checkup,Endocrinologist
+Psoriasis,Moisturize skin,Avoid stress,Use creams,Avoid harsh soap,Dermatologist
+GERD,Avoid spicy food,Eat small meals,Don't lie after eating,Maintain weight,Gastroenterologist
+Chronic cholestasis,Avoid alcohol,Eat healthy,Take medicine,Regular checkup,Gastroenterologist
+Hepatitis,Avoid alcohol,Eat clean food,Take treatment,Avoid sharing needles,Gastroenterologist
+Osteoarthritis,Exercise,Maintain weight,Avoid heavy load,Hot/cold therapy,Orthopedic
+Hypoglycemia,Eat on time,Carry sugar,Monitor glucose,Avoid skipping meals,Endocrinologist
+Acne,Wash face,Avoid oily food,Don't touch pimples,Use mild products,Dermatologist
+Diabetes,Control sugar,Exercise daily,Monitor glucose,Take medicine,Endocrinologist
+Hypertension,Reduce salt,Exercise,Avoid stress,Check BP,Cardiologist
+Piles,Eat fiber,Drink water,Avoid straining,Maintain hygiene,Gastroenterologist
+Common Cold,Rest,Warm fluids,Steam,Avoid cold food,General Physician
+Chicken pox,Avoid scratching,Stay isolated,Keep clean,Take medicine,General Physician
+Hyperthyroidism,Take medicine,Avoid stress,Healthy diet,Regular checkup,Endocrinologist
+Urinary tract infection,Drink water,Maintain hygiene,Don't hold urine,Take antibiotics,Urologist
+Varicose veins,Avoid standing long,Elevate legs,Exercise,Use stockings,Vascular Specialist
+AIDS,Safe practices,Avoid infections,Regular treatment,Healthy lifestyle,Infectious Disease Specialist
+Paralysis,Physiotherapy,Regular care,Healthy diet,Doctor follow-up,Neurologist
+Typhoid,Drink clean water,Eat hygienic food,Take antibiotics,Rest,General Physician
+Fungal infection,Keep dry,Wear clean clothes,Use cream,Maintain hygiene,Dermatologist
+Hepatitis C,Avoid alcohol,Take treatment,Avoid needles,Healthy diet,Gastroenterologist
+Migraine,Avoid stress,Proper sleep,Avoid bright light,Take medicine,Neurologist
+Asthma,Avoid dust and smoke,Carry inhaler,Do breathing exercises,Avoid triggers,Pulmonologist
+Alcoholic hepatitis,Stop alcohol completely,Eat healthy diet,Take medicines,Regular liver checkup,Gastroenterologist
+Jaundice,Drink clean water,Avoid oily food,Take rest,Follow medication,Gastroenterologist
+Hepatitis E,Avoid contaminated food,Drink safe water,Maintain hygiene,Take rest,Gastroenterologist
+Hepatitis D,Avoid alcohol,Take treatment,Healthy diet,Regular checkup,Gastroenterologist
+Heart attack,Call emergency immediately,Avoid stress,Eat healthy diet,Regular heart checkup,Cardiologist
+Pneumonia,Take antibiotics,Rest properly,Drink fluids,Avoid cold exposure,Pulmonologist
+Arthritis,Exercise regularly,Avoid heavy work,Use hot/cold therapy,Maintain weight,Orthopedic
+Gastroenteritis,Drink ORS,Avoid solid food initially,Maintain hygiene,Take rest,General Physician
+Tuberculosis,Complete medication course,Cover mouth while coughing,Maintain hygiene,Regular checkup,Pulmonologist
+Hepatitis A,Drink clean water,Avoid outside food,Take rest,Maintain hygiene,Gastroenterologist
+Hepatitis B,Take vaccination,Avoid sharing needles,Safe practices,Regular checkup,Gastroenterologist
+High BP,Reduce salt,Exercise daily,Avoid stress,Monitor BP,Cardiologist
+Low BP,Drink more fluids,Increase salt intake slightly,Avoid sudden standing,Healthy diet,General Physician
+Covid-19,Wear mask,Maintain distance,Wash hands,Take vaccine,General Physician
+HIV,Safe practices,Avoid sharing needles,Regular treatment,Maintain immunity,Infectious Disease Specialist
+Thyroid,Take medicine daily,Regular test,Healthy diet,Exercise,Endocrinologist
+Dengue,Avoid mosquitoes,Use nets,Drink fluids,Take rest,General Physician
+Food Poisoning,Eat hygienic food,Drink clean water,Avoid outside food,Take ORS,General Physician
+Kidney Stones,Drink lots of water,Avoid salty food,Take medication,Regular checkup,Urologist
+Motion Sickness,Avoid heavy meals before travel,Look straight ahead,Take medicine,Get fresh air,General Physician
+Skin Cancer,Avoid sun exposure,Use sunscreen,Regular skin check,Early treatment,Dermatologist
+Acidity,Avoid spicy food,Eat small meals,Don't lie after eating,Reduce caffeine,Gastroenterologist
+Leukemia,Regular checkups,Follow treatment,Healthy diet,Avoid infections,Oncologist
+Breast Cancer,Regular self-checkup,Early screening,Healthy lifestyle,Consult doctor,Oncologist

@@ -9,6 +9,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap"
         rel="stylesheet">
+    <meta name="csrf-token" content="{% csrf_token %}">
+    {% csrf_token %}
     <style>
         * {
             margin: 0;
@@ -26,6 +28,7 @@
             --white: #FFFFFF;
             --success: #10B981;
             --chat-bg: #F0F9FF;
+            --border: #E2E8F0;
         }
 
         body {
@@ -306,6 +309,158 @@
             font-weight: 600;
             color: var(--text-dark);
         }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            background: white;
+            color: var(--text-dark);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(84, 105, 255, 0.1);
+        }
+
+        .form-input:read-only {
+            background: var(--bg-light);
+            color: var(--text-light);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, var(--accent), #4338CA);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 16px rgba(84, 105, 255, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(84, 105, 255, 0.4);
+        }
+
+        /* Alert Modal Styles */
+        .alert-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .alert-modal.show {
+            display: flex;
+        }
+
+        .alert-modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem 3rem;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .alert-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 900;
+            margin-bottom: 0.75rem;
+        }
+
+        .alert-title.success { color: #059669; }
+        .alert-title.error { color: #DC2626; }
+
+        .alert-message {
+            font-size: 1.05rem;
+            color: var(--text-light);
+            margin-bottom: 1.75rem;
+            line-height: 1.6;
+        }
+
+        .alert-btn {
+            padding: 0.9rem 2.5rem;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+
+        .alert-btn.success {
+            background: linear-gradient(135deg, #059669, #10B981);
+            box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+        }
+
+        .alert-btn.error {
+            background: linear-gradient(135deg, #DC2626, #EF4444);
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+        }
+
+        .alert-divider {
+            height: 4px;
+            border-radius: 2px;
+            margin: 0 auto 1.5rem;
+            width: 60px;
+        }
+
+        .alert-divider.success { background: linear-gradient(135deg, #059669, #10B981); }
+        .alert-divider.error { background: linear-gradient(135deg, #DC2626, #EF4444); }
 
         /* Chat Layout */
         main {
@@ -699,10 +854,11 @@
         <div class="nav-container">
             <a href="#" class="logo">Heal<span>Smart</span></a>
             <ul class="nav-links">
-                <li><a href="{% url 'home' %}">Home</a></li>
+                
                 <li><a href="{% url 'patient_dashboard' %}">Dashboard</a></li>
                 <li><a href="{% url 'all_doctors' %}">Doctors</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
+                <li><a href="{% url 'patient_chat' %}"class="active">Diagnosis</a></li>
+                
             </ul>
             <div class="nav-right">
                 <div class="user-badge" onclick="openPatientInfoModal()">
@@ -731,6 +887,7 @@
                     <h2>HealSmart AI Assistant</h2>
                     <p><span class="chat-status"></span> Online | Ready to help</p>
                 </div>
+                <button id="reset-chat-btn" style="margin-left:auto;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;transition:all 0.3s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">🔄 New Chat</button>
             </div>
 
             <!-- Chat Messages -->
@@ -739,8 +896,9 @@
                 <div class="message message-bot">
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
-                        Hello! I am HealSmart AI. Please type your symptoms (e.g., "I have a headache, fever, and
-                        nausea") and I will help predict possible conditions.
+                        Hello! I am <strong>HealSmart AI</strong>. Tell me your symptoms and I'll ask follow-up questions to give you a more accurate prediction.<br><br>
+                        <strong>Example:</strong> "I have a headache and fever"<br>
+                        <small style="color:#6B7280;">💡 I'll ask about related symptoms before predicting. Type <strong>"predict"</strong> anytime to see results, or <strong>"new"</strong> to start over.</small>
                         <span class="message-time">Just now</span>
                     </div>
                 </div>
@@ -901,13 +1059,18 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
                 try {
-                    // Send to Flask backend
-                    const response = await fetch('/ask', {
+                    // Get CSRF token
+                    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                    const csrfToken = csrfInput ? csrfInput.value : '';
+
+                    // Send to Django backend
+                    const response = await fetch("{% url 'chat_api' %}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
                         },
-                        body: JSON.stringify({ message: text, session_id: sessionId }),
+                        body: JSON.stringify({ message: text }),
                     });
 
                     const data = await response.json();
@@ -915,8 +1078,12 @@
                     // Remove typing indicator
                     typingDiv.remove();
 
-                    // Add bot response
-                    addMessage(data.response, false, true);
+                    if (data.success) {
+                        // Add bot response (HTML formatted)
+                        addMessage(data.response, false, true);
+                    } else {
+                        addMessage(data.error || "Sorry, something went wrong.", false);
+                    }
 
                 } catch (error) {
                     console.error("Error communicating with AI:", error);
@@ -931,6 +1098,82 @@
                     handleSend();
                 }
             });
+
+            // Reset chat button
+            const resetBtn = document.getElementById("reset-chat-btn");
+            if (resetBtn) {
+                resetBtn.addEventListener("click", () => {
+                    userInput.value = "reset";
+                    handleSend();
+                });
+            }
+
+            // Make sendSymptom available globally for symptom chip clicks
+            window.sendSymptom = function(symptom) {
+                userInput.value = symptom.replace(/_/g, " ");
+                handleSend();
+            };
+
+            // ── Multi-select symptom chip functions ──────────────────────
+
+            // Toggle chip selected state and show/hide Confirm button
+            window.toggleSymptomChip = function(chip) {
+                const container = chip.closest('.followup-container');
+                if (!container || container.dataset.used === 'true') return;
+
+                const isSelected = chip.dataset.selected === 'true';
+
+                if (isSelected) {
+                    // Deselect
+                    chip.dataset.selected = 'false';
+                    chip.style.background = 'linear-gradient(135deg,#EEF2FF,#E0E7FF)';
+                    chip.style.color = '#4338CA';
+                    chip.style.borderColor = '#C7D2FE';
+                    chip.style.boxShadow = 'none';
+                    chip.style.transform = 'none';
+                } else {
+                    // Select
+                    chip.dataset.selected = 'true';
+                    chip.style.background = 'linear-gradient(135deg,#5469FF,#4338CA)';
+                    chip.style.color = 'white';
+                    chip.style.borderColor = '#5469FF';
+                    chip.style.boxShadow = '0 4px 12px rgba(84,105,255,0.35)';
+                    chip.style.transform = 'translateY(-2px)';
+                }
+
+                // Show Confirm button only if at least one chip is selected
+                const confirmBtn = container.querySelector('.confirm-symptoms-btn');
+                const anySelected = container.querySelectorAll('[data-selected="true"]').length > 0;
+                if (confirmBtn) {
+                    confirmBtn.style.display = anySelected ? 'inline-block' : 'none';
+                }
+            };
+
+            // Collect all selected chips and send as one message
+            window.confirmSelectedSymptoms = function(btn) {
+                const container = btn.closest('.followup-container');
+                if (!container || container.dataset.used === 'true') return;
+
+                const selected = container.querySelectorAll('[data-selected="true"]');
+                if (selected.length === 0) return;
+
+                const symptoms = Array.from(selected)
+                    .map(c => c.dataset.symptom.replace(/_/g, ' '))
+                    .join(', ');
+
+                // Lock the container so it can't be clicked again
+                container.dataset.used = 'true';
+                container.querySelectorAll('.symptom-chip-select').forEach(c => {
+                    c.style.opacity = '0.6';
+                    c.style.cursor = 'default';
+                    c.style.pointerEvents = 'none';
+                });
+                btn.style.display = 'none';
+
+                // Send selected symptoms as one message
+                userInput.value = symptoms;
+                handleSend();
+            };
         });
     </script>
     <!-- Patient Info Modal -->
@@ -938,7 +1181,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Patient Information</h3>
-                <button class="modal-close" onclick="closePatientInfoModal()">×</button>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <a href="{% url 'patient_page' %}" style="padding: 0.5rem 1rem; background: linear-gradient(135deg, var(--teal), #0D9488); color: white; border-radius: 12px; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                        </svg>
+                        Edit Profile
+                    </a>
+                    <button class="modal-close" onclick="closePatientInfoModal()">×</button>
+                </div>
             </div>
 
             <div class="info-sections">
@@ -982,6 +1234,161 @@
         function openPatientInfoModal() { document.getElementById('patientInfoModal').classList.add('show'); }
         function closePatientInfoModal() { document.getElementById('patientInfoModal').classList.remove('show'); }
         document.getElementById('patientInfoModal').addEventListener('click', function(e) { if (e.target === this) closePatientInfoModal(); });
+    </script>
+
+    <!-- Booking Modal -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Book Appointment</h3>
+                <button class="modal-close" onclick="closeBookingModal()">×</button>
+            </div>
+
+            <form id="bookingForm" onsubmit="submitBooking(event)">
+                {% csrf_token %}    
+                <input type="hidden" name="doctor_id" id="doctorId">
+                
+                <div class="form-group">
+                    <label class="form-label">Doctor Name</label>
+                    <input type="text" class="form-input" id="doctorName" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Specialization</label>
+                    <input type="text" class="form-input" id="doctorSpec" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Patient Name</label>
+                    <input type="text" class="form-input" id="patientName" value="{{ user.full_name }}" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Appointment Date</label>
+                    <input type="date" class="form-input" name="appointment_date" id="appointmentDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Appointment Time</label>
+                    <select class="form-select" name="appointment_time" id="appointmentTime" required>
+                        <option value="">Select Time</option>
+                        <option value="09:00 AM">09:00 AM</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                        <option value="02:00 PM">02:00 PM</option>
+                        <option value="03:00 PM">03:00 PM</option>
+                        <option value="04:00 PM">04:00 PM</option>
+                        <option value="05:00 PM">05:00 PM</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Reason for Visit</label>
+                    <textarea class="form-textarea" name="reason_for_visit" id="appointmentReason" required placeholder="Describe your symptoms or reason for consultation..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div class="alert-modal" id="customAlertModal">
+        <div class="alert-modal-content">
+            <div class="alert-icon" id="alertIcon"></div>
+            <div class="alert-divider" id="alertDivider"></div>
+            <h3 class="alert-title" id="alertTitle"></h3>
+            <p class="alert-message" id="alertMessage"></p>
+            <button class="alert-btn" id="alertBtn" onclick="closeCustomAlert()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Set minimum date to today
+        const todayDate = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('appointmentDate');
+        if (dateInput) dateInput.setAttribute('min', todayDate);
+
+        function openBookingModal(drName, spec, drId, ptName) {
+            document.getElementById('doctorName').value = drName;
+            document.getElementById('doctorSpec').value = spec;
+            document.getElementById('doctorId').value = drId || '';
+            document.getElementById('patientName').value = ptName || '{{ user.full_name }}';
+            document.getElementById('bookingModal').classList.add('show');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.remove('show');
+            document.getElementById('bookingForm').reset();
+        }
+
+        function submitBooking(event) {
+            event.preventDefault();
+
+            const data = {
+                doctor_id: document.getElementById('doctorId').value,
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                reason: document.getElementById('appointmentReason').value
+            };
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("/patient/book-appointment/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showCustomAlert('success', 'Booking Confirmed!', 'Your appointment has been booked successfully.');
+                    closeBookingModal();
+                    // Optional: Refresh or redirect
+                    // setTimeout(() => location.reload(), 2000);
+                } else {
+                    showCustomAlert('error', 'Booking Failed', result.error || 'This time slot is already booked. Please choose a different time.');
+                }
+            })
+            .catch(err => {
+                console.error("Booking error:", err);
+                showCustomAlert('error', 'Error', 'Something went wrong. Please try again.');
+            });
+        }
+
+        function showCustomAlert(type, title, message) {
+            const modal = document.getElementById('customAlertModal');
+            const icon = document.getElementById('alertIcon');
+            const divider = document.getElementById('alertDivider');
+            const titleEl = document.getElementById('alertTitle');
+            const msgEl = document.getElementById('alertMessage');
+            const btn = document.getElementById('alertBtn');
+
+            icon.textContent = type === 'success' ? '✅' : '❌';
+            titleEl.textContent = title;
+            titleEl.className = 'alert-title ' + type;
+            msgEl.textContent = message;
+            divider.className = 'alert-divider ' + type;
+            btn.className = 'alert-btn ' + type;
+
+            modal.classList.add('show');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').classList.remove('show');
+        }
+
+        // Close on clicking outside
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) closeBookingModal();
+        });
+        document.getElementById('customAlertModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCustomAlert();
+        });
     </script>
 </body>
 </html>

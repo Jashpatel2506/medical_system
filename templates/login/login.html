@@ -448,7 +448,6 @@
             <ul class="nav-links">
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="{% url 'login' %}">Diagnosis</a></li>
-                <li><a href="#about">About</a></li>
                 <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
         </div>
@@ -466,6 +465,12 @@
             {% if error %}
             <div class="error-message show">
                 {{ error }}
+            </div>
+            {% endif %}
+
+            {% if success_msg %}
+            <div class="error-message show" style="background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: var(--success);">
+                {{ success_msg }}
             </div>
             {% endif %}
 
@@ -508,10 +513,7 @@
                 </div>
 
                 <div class="form-options">
-                    <div class="remember-me">
-                        <input type="checkbox" id="remember" name="remember">
-                        <label for="remember">Remember me</label>
-                    </div>
+        
                     <a href="#forgot" class="forgot-password">Forgot Password?</a>
                 </div>
 
