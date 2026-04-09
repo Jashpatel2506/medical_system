@@ -25,7 +25,7 @@ def patient_page(request):
         if not patient:
             patient = Patient(user=user)
 
-        patient.blood_group = request.POST.get("blood_group", "")
+        patient.blood_group      = request.POST.get("blood_group", "")
         patient.emergency_contact = request.POST.get("emergency_contact", "")
 
         height = request.POST.get("height_cm", "").strip()
@@ -66,16 +66,13 @@ def patient_dashboard(request):
         return redirect("login")
 
     try:
-        user = User.objects.get(id=request.session["user_id"])
+        user    = User.objects.get(id=request.session["user_id"])
         patient = Patient.objects.filter(user=user).first()
-
         doctors = Doctor.objects.select_related("user").all()
 
-        # Search filters
         search_name = request.GET.get('name', '').strip()
         search_city = request.GET.get('city', '').strip()
         search_spec = request.GET.get('specialization', '').strip()
-        search_disease = request.GET.get('disease', '').strip()
 
         if search_name:
             doctors = doctors.filter(user__full_name__icontains=search_name)
@@ -84,23 +81,16 @@ def patient_dashboard(request):
             doctors = doctors.filter(Q(clinic_name__icontains=search_city) | Q(user__address__icontains=search_city))
         if search_spec:
             doctors = doctors.filter(specialization__icontains=search_spec)
-        #if search_disease:
-            #from django.db.models import Q
-            #doctors = doctors.filter(
-                #Q(specialization__icontains=search_disease) | 
-                #Q(qualifications__icontains=search_disease)
-            #)
 
-        # Apply limit after all filters
         doctors = doctors[:6]
 
-        appointments = Appointment.objects.filter(patient=patient, status='Booked').select_related("doctor__user")
-        pending_appointments = Appointment.objects.filter(patient=patient, status='Pending').select_related("doctor__user")
+        appointments           = Appointment.objects.filter(patient=patient, status='Booked').select_related("doctor__user")
+        pending_appointments   = Appointment.objects.filter(patient=patient, status='Pending').select_related("doctor__user")
         cancelled_appointments = Appointment.objects.filter(patient=patient, status='Cancelled').select_related("doctor__user")
         completed_appointments = Appointment.objects.filter(patient=patient, status='Completed').select_related("doctor__user")
 
-        upcoming_count = appointments.count()
-        pending_count = pending_appointments.count()
+        upcoming_count  = appointments.count()
+        pending_count   = pending_appointments.count()
         cancelled_count = cancelled_appointments.count()
         completed_count = completed_appointments.count()
 
@@ -108,15 +98,13 @@ def patient_dashboard(request):
             if "\n\n[CANCEL_REASON]" in appt.reason_for_visit:
                 parts = appt.reason_for_visit.split("\n\n[CANCEL_REASON]")
                 appt.display_reason = parts[0]
-                appt.cancel_reason = parts[1]
+                appt.cancel_reason  = parts[1]
             else:
                 appt.display_reason = appt.reason_for_visit
-                appt.cancel_reason = "No reason provided."
+                appt.cancel_reason  = "No reason provided."
 
         context = {
-            "user": user,
-            "patient": patient,
-            "doctors": doctors,
+            "user": user, "patient": patient, "doctors": doctors,
             "appointments": appointments,
             "pending_appointments": pending_appointments,
             "cancelled_appointments": cancelled_appointments,
@@ -133,17 +121,16 @@ def patient_dashboard(request):
     except User.DoesNotExist:
         return redirect("login")
 
+
 def all_doctors(request):
     if request.session.get("role") != "Patient":
         return redirect("login")
 
     try:
-        user = User.objects.get(id=request.session["user_id"])
+        user    = User.objects.get(id=request.session["user_id"])
         patient = Patient.objects.filter(user=user).first()
-        
         doctors = Doctor.objects.select_related("user").all()
 
-        # Search filters
         search_name = request.GET.get('name', '').strip()
         search_city = request.GET.get('city', '').strip()
         search_spec = request.GET.get('specialization', '').strip()
@@ -157,15 +144,15 @@ def all_doctors(request):
             doctors = doctors.filter(specialization__icontains=search_spec)
 
         context = {
-            "user": user,
-            "patient": patient,
-            "doctors": doctors,
-            "notifications_count": 0
+            "user": user, "patient": patient,
+            "doctors": doctors, "notifications_count": 0
         }
         return render(request, "patient/all_doctors.html", context)
 
     except User.DoesNotExist:
         return redirect("login")
+
+
 # ==================== APPOINTMENT VIEWS ====================
 
 from django.shortcuts import render, redirect
@@ -178,26 +165,19 @@ from datetime import datetime
 from django.http import JsonResponse
 
 def book_appointment(request):
-
     if request.method == "POST":
         try:
             data = json.loads(request.body)
 
             doctor_id = data.get("doctor_id")
-            date = data.get("date")
-            time_str = data.get("time")
-            reason = data.get("reason")
+            date      = data.get("date")
+            time_str  = data.get("time")
+            reason    = data.get("reason")
 
-            print("Doctor ID:", doctor_id)
-            print("Date:", date)
-            print("Time:", time_str)
-            print("Reason:", reason)
-
-            # convert "09:00 AM" → time object
             appointment_time = datetime.strptime(time_str, "%I:%M %p").time()
 
             patient = Patient.objects.get(user_id=request.session["user_id"])
-            doctor = Doctor.objects.get(id=doctor_id)
+            doctor  = Doctor.objects.get(id=doctor_id)
 
             if Appointment.objects.filter(
                 doctor=doctor,
@@ -212,9 +192,7 @@ def book_appointment(request):
                 appointment_date=date,
                 appointment_time=appointment_time,
                 reason_for_visit=reason,
-                status='Pending'   # ✅ always pending when patient books
-
-                
+                status='Pending'
             )
 
             return JsonResponse({"success": True})
@@ -222,98 +200,65 @@ def book_appointment(request):
         except Exception as e:
             print("ERROR:", e)
             return JsonResponse({"success": False})
+
+
 # ==================== CHAT VIEWS ====================
 
 def chat_view(request):
     """Patient chat interface"""
-    
-    # Check if user is logged in and is a patient
     if request.session.get("role") != "Patient":
         return redirect("login")
-    
+
     try:
-        user = User.objects.get(id=request.session["user_id"])
+        user    = User.objects.get(id=request.session["user_id"])
         patient = Patient.objects.filter(user=user).first()
-        
+
         return render(request, 'patient/healsmart_professional_chat.html', {
-            'user': user,
-            'patient': patient,
-            'notifications_count': 0
+            'user': user, 'patient': patient, 'notifications_count': 0
         })
     except User.DoesNotExist:
         return redirect("login")
 
 
 def chat_api(request):
-    """Handle chat messages via AJAX — multi-step symptom collection."""
-    
-    # Check if user is logged in
+    """Chat messages handle karo via AJAX — multi-step symptom collection."""
     if request.session.get("role") != "Patient":
-        return JsonResponse({
-            'success': False,
-            'error': 'Please login to continue'
-        }, status=401)
-    
+        return JsonResponse({'success': False, 'error': 'Please login to continue'}, status=401)
+
     if request.method == 'POST':
         try:
-            # Parse JSON data from request
-            data = json.loads(request.body)
+            data         = json.loads(request.body)
             user_message = data.get('message', '').strip()
-            
-            # Validate message
+
             if not user_message:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Message cannot be empty'
-                }, status=400)
-            
-            # Get user info for personalization
-            user = User.objects.get(id=request.session["user_id"])
+                return JsonResponse({'success': False, 'error': 'Message cannot be empty'}, status=400)
+
+            user    = User.objects.get(id=request.session["user_id"])
             patient = Patient.objects.filter(user=user).first()
-            
-            # Log the conversation (optional)
+
             logger.info(f"Patient {user.full_name} said: {user_message}")
-            
-            # Generate AI response (pass request for session access)
+
             bot_response = generate_response(user_message, request, patient)
-            
-            # Return response
-            return JsonResponse({
-                'success': True,
-                'response': bot_response
-            })
-            
+
+            return JsonResponse({'success': True, 'response': bot_response})
+
         except json.JSONDecodeError:
-            return JsonResponse({
-                'success': False,
-                'error': 'Invalid JSON data'
-            }, status=400)
-            
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
         except User.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'error': 'User not found'
-            }, status=404)
-            
+            return JsonResponse({'success': False, 'error': 'User not found'}, status=404)
         except Exception as e:
             logger.error(f"Chat API error: {str(e)}")
-            return JsonResponse({
-                'success': False,
-                'error': 'Something went wrong. Please try again.'
-            }, status=500)
-    
-    # If not POST request
-    return JsonResponse({
-        'success': False,
-        'error': 'Invalid request method'
-    }, status=405)
+            return JsonResponse({'success': False, 'error': 'Something went wrong. Please try again.'}, status=500)
 
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+
+# ==================== CHAT LOGIC ====================
 
 import re
 import sys
 from doctors.models import Doctor
 
-# Add project root to path so prediction_model can be imported
 _project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
@@ -323,53 +268,52 @@ from prediction_model.predict import predict_disease, match_symptoms, get_follow
 
 # ── Disease → Specialization mapping ─────────────────────────────────────────
 DISEASE_SPECIALIZATION_MAP = {
-    # Infectious / Viral
-    "Fungal infection":              ["Dermatology", "Dermatologist"],
-    "Allergy":                       ["Allergy", "Immunology", "ENT"],
-    "GERD":                          ["Gastroenterology", "Gastroenterologist"],
-    "Chronic cholestasis":           ["Gastroenterology", "Hepatology"],
-    "Drug Reaction":                 ["Dermatology", "Allergy", "General Physician"],
-    "Peptic ulcer diseae":           ["Gastroenterology", "Gastroenterologist"],
-    "AIDS":                          ["Infectious Disease", "General Physician"],
-    "Diabetes":                      ["Endocrinology", "Endocrinologist", "Diabetology"],
-    "Gastroenteritis":               ["Gastroenterology", "General Physician"],
-    "Bronchial Asthma":              ["Pulmonology", "Respiratory", "Pulmonologist"],
-    "Hypertension":                  ["Cardiology", "Cardiologist", "General Physician"],
-    "Migraine":                      ["Neurology", "Neurologist"],
-    "Cervical spondylosis":          ["Orthopedics", "Orthopedic", "Neurology"],
-    "Paralysis (brain hemorrhage)":  ["Neurology", "Neurologist"],
-    "Jaundice":                      ["Gastroenterology", "Hepatology", "General Physician"],
-    "Malaria":                       ["Infectious Disease", "General Physician"],
-    "Chicken pox":                   ["Dermatology", "General Physician", "Pediatrics"],
-    "Dengue":                        ["Infectious Disease", "General Physician"],
-    "Typhoid":                       ["Infectious Disease", "General Physician"],
-    "hepatitis A":                   ["Gastroenterology", "Hepatology"],
-    "Hepatitis B":                   ["Gastroenterology", "Hepatology"],
-    "Hepatitis C":                   ["Gastroenterology", "Hepatology"],
-    "Hepatitis D":                   ["Gastroenterology", "Hepatology"],
-    "Hepatitis E":                   ["Gastroenterology", "Hepatology"],
-    "Alcoholic hepatitis":           ["Gastroenterology", "Hepatology"],
-    "Tuberculosis":                  ["Pulmonology", "Respiratory", "Infectious Disease"],
-    "Common Cold":                   ["General Physician", "ENT"],
-    "Pneumonia":                     ["Pulmonology", "Respiratory", "General Physician"],
-    "Dimorphic hemmorhoids(piles)":  ["Gastroenterology", "Proctology", "General Surgery"],
-    "Heart attack":                  ["Cardiology", "Cardiologist"],
-    "Varicose veins":                ["Vascular Surgery", "General Surgery"],
-    "Hypothyroidism":                ["Endocrinology", "Endocrinologist"],
-    "Hyperthyroidism":               ["Endocrinology", "Endocrinologist"],
-    "Hypoglycemia":                  ["Endocrinology", "Diabetology", "General Physician"],
-    "Osteoarthritis":                ["Orthopedics", "Rheumatology", "Orthopedic"],
-    "Arthritis":                     ["Rheumatology", "Orthopedics", "Orthopedic"],
-    "(vertigo) Paroymsal  Positional Vertigo": ["ENT", "Neurology", "Neurologist"],
-    "Acne":                          ["Dermatology", "Dermatologist"],
-    "Urinary tract infection":       ["Urology", "Urologist", "General Physician"],
-    "Psoriasis":                     ["Dermatology", "Dermatologist"],
-    "Impetigo":                      ["Dermatology", "Dermatologist", "General Physician"],
+    "Fungal infection":                         ["Dermatology", "Dermatologist"],
+    "Allergy":                                  ["Allergy", "Immunology", "ENT"],
+    "GERD":                                     ["Gastroenterology", "Gastroenterologist"],
+    "Chronic cholestasis":                      ["Gastroenterology", "Hepatology"],
+    "Drug Reaction":                            ["Dermatology", "Allergy", "General Physician"],
+    "Peptic ulcer diseae":                      ["Gastroenterology", "Gastroenterologist"],
+    "AIDS":                                     ["Infectious Disease", "General Physician"],
+    "Diabetes":                                 ["Endocrinology", "Endocrinologist", "Diabetology"],
+    "Gastroenteritis":                          ["Gastroenterology", "General Physician"],
+    "Bronchial Asthma":                         ["Pulmonology", "Respiratory", "Pulmonologist"],
+    "Hypertension":                             ["Cardiology", "Cardiologist", "General Physician"],
+    "Migraine":                                 ["Neurology", "Neurologist"],
+    "Cervical spondylosis":                     ["Orthopedics", "Orthopedic", "Neurology"],
+    "Paralysis (brain hemorrhage)":             ["Neurology", "Neurologist"],
+    "Jaundice":                                 ["Gastroenterology", "Hepatology", "General Physician"],
+    "Malaria":                                  ["Infectious Disease", "General Physician"],
+    "Chicken pox":                              ["Dermatology", "General Physician", "Pediatrics"],
+    "Dengue":                                   ["Infectious Disease", "General Physician"],
+    "Typhoid":                                  ["Infectious Disease", "General Physician"],
+    "hepatitis A":                              ["Gastroenterology", "Hepatology"],
+    "Hepatitis B":                              ["Gastroenterology", "Hepatology"],
+    "Hepatitis C":                              ["Gastroenterology", "Hepatology"],
+    "Hepatitis D":                              ["Gastroenterology", "Hepatology"],
+    "Hepatitis E":                              ["Gastroenterology", "Hepatology"],
+    "Alcoholic hepatitis":                      ["Gastroenterology", "Hepatology"],
+    "Tuberculosis":                             ["Pulmonology", "Respiratory", "Infectious Disease"],
+    "Common Cold":                              ["General Physician", "ENT"],
+    "Pneumonia":                                ["Pulmonology", "Respiratory", "General Physician"],
+    "Dimorphic hemmorhoids(piles)":             ["Gastroenterology", "Proctology", "General Surgery"],
+    "Heart attack":                             ["Cardiology", "Cardiologist"],
+    "Varicose veins":                           ["Vascular Surgery", "General Surgery"],
+    "Hypothyroidism":                           ["Endocrinology", "Endocrinologist"],
+    "Hyperthyroidism":                          ["Endocrinology", "Endocrinologist"],
+    "Hypoglycemia":                             ["Endocrinology", "Diabetology", "General Physician"],
+    "Osteoarthritis":                           ["Orthopedics", "Rheumatology", "Orthopedic"],
+    "Arthritis":                                ["Rheumatology", "Orthopedics", "Orthopedic"],
+    "(vertigo) Paroymsal  Positional Vertigo":  ["ENT", "Neurology", "Neurologist"],
+    "Acne":                                     ["Dermatology", "Dermatologist"],
+    "Urinary tract infection":                  ["Urology", "Urologist", "General Physician"],
+    "Psoriasis":                                ["Dermatology", "Dermatologist"],
+    "Impetigo":                                 ["Dermatology", "Dermatologist", "General Physician"],
 }
 
 
 def _get_recommended_doctors(disease_name, max_doctors=3):
-    """Return up to max_doctors approved doctors matching the predicted disease's specialty."""
+    """Predicted disease ki specialty ke matching approved doctors return karo."""
     keywords = DISEASE_SPECIALIZATION_MAP.get(disease_name, ["General Physician", "General"])
 
     from django.db.models import Q
@@ -379,110 +323,169 @@ def _get_recommended_doctors(disease_name, max_doctors=3):
 
     doctors = Doctor.objects.filter(query, is_approved=True).select_related("user")[:max_doctors]
 
-    # Fallback: any approved doctor
     if not doctors.exists():
         doctors = Doctor.objects.filter(is_approved=True).select_related("user")[:max_doctors]
 
     return list(doctors)
 
 
-
+# ══════════════════════════════════════════════════════════════════════════════
+# FIX: IMPROVED _extract_symptoms()
+#
+# Pehle ki problem:
+#   "difficulty breathing" → filler strip ke baad → "breathing" → no match
+#   "saans phoolna"        → no handling → no match
+#
+# Ab kya hota hai:
+#   1. Original full phrase bhi candidate rakha (compound symptoms ke liye)
+#   2. Hinglish phrases bhi normalize hokar synonym map se match honge
+#   3. Har possible combination try hota hai
+# ══════════════════════════════════════════════════════════════════════════════
 def _extract_symptoms(message):
-    """Extract symptom keywords from a free-text user message."""
-    # Clean the message
+    """Free-text user message se symptom keywords extract karo."""
     text = message.lower().strip()
-    # Remove common filler words
-    text = re.sub(r'\b(i have|i am|i\'m|having|feeling|experiencing|suffering from|got|with|and|also|the|a|an|my|me|very|really|quite|bit|little|some|been|for|days|weeks|since|yesterday|today)\b', ' ', text)
-    # Replace punctuation with spaces
-    text = re.sub(r'[,;.!?/\\()\[\]{}"\'"]', ' ', text)
-    # Normalize whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
 
-    # Split into candidate tokens (single words and bigrams)
-    words = text.split()
-    candidates = list(words)
-    # Add bigrams (e.g., "skin rash" → "skin_rash")
+    # FIX: Original normalized phrase PEHLE save karo (filler strip se pehle)
+    original_clean = re.sub(r'[,;.!?/\\()\[\]{}"\'"]', ' ', text)
+    original_clean = re.sub(r'\s+', ' ', original_clean).strip()
+
+    # Filler words remove karo
+    text_stripped = re.sub(
+        r'\b(i have|i am|i\'m|having|feeling|experiencing|suffering from|'
+        r'got|with|and|also|the|a|an|my|me|very|really|quite|bit|little|'
+        r'some|been|for|days|weeks|since|yesterday|today|mujhe|mujhe hai|'
+        r'ho raha hai|ho rahi hai|ho rahe hain|hai|hain|se|mein|ka|ki|ke)\b',
+        ' ', text
+    )
+    text_stripped = re.sub(r'[,;.!?/\\()\[\]{}"\'"]', ' ', text_stripped)
+    text_stripped = re.sub(r'\s+', ' ', text_stripped).strip()
+
+    words = text_stripped.split()
+
+    candidates = []
+
+    # Single words
+    candidates.extend(words)
+
+    # Bigrams (2 words joined)
     for i in range(len(words) - 1):
         candidates.append(words[i] + "_" + words[i + 1])
-    # Add trigrams
+
+    # Trigrams (3 words joined)
     for i in range(len(words) - 2):
         candidates.append(words[i] + "_" + words[i + 1] + "_" + words[i + 2])
 
-    # Also try underscore versions of single words already containing underscores
-    candidates.append(text.replace(" ", "_"))
+    # FIX: Original full phrase bhi try karo (e.g. "difficulty breathing")
+    candidates.append(original_clean.replace(" ", "_"))
+
+    # FIX: Original text ke bhi bigrams/trigrams try karo
+    orig_words = original_clean.split()
+    for i in range(len(orig_words) - 1):
+        candidates.append(orig_words[i] + "_" + orig_words[i + 1])
+    for i in range(len(orig_words) - 2):
+        candidates.append(orig_words[i] + "_" + orig_words[i + 1] + "_" + orig_words[i + 2])
 
     return candidates
 
 
-# Minimum symptoms required before making a prediction
-MIN_SYMPTOMS_FOR_PREDICTION = 5
+# Minimum symptoms before prediction karo
+MIN_SYMPTOMS_FOR_PREDICTION = 4   # 5 se 4 kiya — thoda relaxed
 # Maximum follow-up rounds
 MAX_FOLLOWUP_ROUNDS = 3
 
 
 def generate_response(message, request, patient=None):
-    """Generate a disease prediction response using multi-step symptom collection."""
+    """Disease prediction response generate karo — multi-step symptom collection."""
 
     msg_lower = message.lower().strip()
 
-    # ── Handle reset/new commands ─────────────────────────────────────────
-    if msg_lower in ("reset", "new", "start over", "clear", "restart"):
+    # ── Reset / New conversation ──────────────────────────────────────────
+    if msg_lower in ("reset", "new", "start over", "clear", "restart", "dobara", "phir se"):
         request.session.pop('chat_symptoms', None)
         request.session.pop('chat_round', None)
         request.session.modified = True
         return """🔄 <strong>Conversation reset!</strong><br><br>
-Please tell me your symptoms and I'll help predict possible conditions.<br>
+Please describe your symptoms and I'll help predict possible conditions.<br>
 <em>Example: "I have headache, fever, and nausea"</em>"""
 
-    # ── Get or init session state ─────────────────────────────────────────
+    # ── Session state ─────────────────────────────────────────────────────
     session_symptoms = request.session.get('chat_symptoms', [])
-    chat_round = request.session.get('chat_round', 0)
+    chat_round       = request.session.get('chat_round', 0)
 
-    # ── Check if user wants to force prediction ──────────────────────────
-    force_predict = msg_lower in ("predict", "done", "yes predict", "show result", "show results", "result", "results")
+    # ── Force predict commands ────────────────────────────────────────────
+    force_predict = msg_lower in (
+        "predict", "done", "yes predict", "show result", "show results",
+        "result", "results", "batao", "predict karo", "bata do"
+    )
 
-    # ── Extract symptoms from current message ────────────────────────────
+    # ── Symptoms extract karo current message se ─────────────────────────
     if not force_predict:
-        candidates = _extract_symptoms(message)
-        new_matched, _ = match_symptoms(candidates)  # unpack (matched, unmatched) tuple
-        
-        # Add new symptoms to session (deduplicate)
+        candidates           = _extract_symptoms(message)
+        new_matched, new_unmatched = match_symptoms(candidates)
+
+        # Session mein add karo (deduplicate)
         existing_set = set(session_symptoms)
         for s in new_matched:
             if s not in existing_set:
                 session_symptoms.append(s)
                 existing_set.add(s)
 
-    # Save to session
+        # FIX: Agar koi bhi symptom match nahi hua, user ko helpful feedback do
+        if not new_matched and not session_symptoms:
+            # Unmatched symptoms se hint do
+            unmatched_display = []
+            for raw in new_unmatched[:3]:
+                clean = raw.replace("_", " ")
+                if len(clean) > 3:  # very short words ignore karo
+                    unmatched_display.append(f'<em>"{clean}"</em>')
+
+            unmatched_hint = ""
+            if unmatched_display:
+                unmatched_hint = f"""<br><br>
+<div style="background:#FEF3C7;padding:8px 12px;border-radius:8px;font-size:0.85em;">
+⚠️ Could not identify these words: {', '.join(unmatched_display)}<br>
+<strong>Try using:</strong> headache, fever, cough, fatigue, nausea, joint pain, skin rash, chest pain, vomiting, dizziness
+</div>"""
+
+            return f"""No recognized symptoms found in your message.{unmatched_hint}
+
+<strong>Examples:</strong>
+<ul>
+<li>"I have headache, fever, and body pain"</li>
+<li>"frequent urination, extreme thirst, fatigue"</li>
+<li>"itching, skin rash, nausea, vomiting"</li>
+</ul>"""
+
+    # Session save karo
     request.session['chat_symptoms'] = session_symptoms
-    request.session.modified = True
+    request.session.modified         = True
 
     all_matched = session_symptoms
 
-    # ── No symptoms at all ───────────────────────────────────────────────
+    # ── Koi bhi symptom nahi ─────────────────────────────────────────────
     if not all_matched:
-        return """I couldn't identify any symptoms from your message. Please describe your symptoms clearly.
+        return """No symptoms could be identified. Please describe your symptoms clearly.
 
 <strong>Example:</strong> "I have headache, fever, and nausea"
 
-You can also mention symptoms like: <em>itching, skin rash, cough, fatigue, vomiting, chest pain, joint pain</em>, etc."""
+Common symptoms: <em>itching, skin rash, cough, fatigue, vomiting, chest pain, joint pain, dizziness, diarrhoea</em>"""
 
-    # ── Decide: ask follow-up or predict ─────────────────────────────────
+    # ── Predict karna chahiye ya follow-up ───────────────────────────────
     should_predict = (
-        force_predict or
-        len(all_matched) >= MIN_SYMPTOMS_FOR_PREDICTION or
-        chat_round >= MAX_FOLLOWUP_ROUNDS
+        force_predict
+        or len(all_matched) >= MIN_SYMPTOMS_FOR_PREDICTION
+        or chat_round >= MAX_FOLLOWUP_ROUNDS
     )
 
     if not should_predict:
-        # Ask follow-up questions
+        # Follow-up questions
         followup_symptoms = get_followup_symptoms(all_matched, max_suggestions=5)
         chat_round += 1
         request.session['chat_round'] = chat_round
-        request.session.modified = True
+        request.session.modified      = True
 
         matched_display = ", ".join(s.replace("_", " ").title() for s in all_matched)
-        
+
         if followup_symptoms:
             symptom_buttons = ""
             for sym in followup_symptoms:
@@ -503,7 +506,7 @@ You can also mention symptoms like: <em>itching, skin rash, cough, fatigue, vomi
 </div>
 
 <div style="margin-bottom:12px;">
-To give you a more accurate prediction, do you also experience any of these symptoms?<br>
+To give a more accurate prediction — do you also have any of these symptoms?<br>
 <small style="color:#6B7280;">Select one or more, then click <strong>Confirm</strong>.</small>
 </div>
 
@@ -523,22 +526,21 @@ To give you a more accurate prediction, do you also experience any of these symp
 </div>
 </div>"""
         else:
-            # No follow-ups available, go ahead and predict
             should_predict = True
 
     # ── Final prediction ─────────────────────────────────────────────────
     if should_predict:
         result = predict_disease(all_matched)
 
-        # Clear session after prediction
+        # Session clear karo prediction ke baad
         request.session.pop('chat_symptoms', None)
         request.session.pop('chat_round', None)
         request.session.modified = True
 
         if result["disease"] is None:
-            return f"""I couldn't match your symptoms to any known conditions in my database.
+            return f"""Could not match your symptoms to any known condition.
 
-<strong>Try describing your symptoms using common terms like:</strong>
+<strong>Try using common terms like:</strong>
 <ul>
 <li>headache, fever, cough, fatigue, vomiting</li>
 <li>skin rash, joint pain, chest pain, nausea</li>
@@ -547,16 +549,46 @@ To give you a more accurate prediction, do you also experience any of these symp
 
 <em>Please try again with different symptom descriptions.</em>"""
 
-        # Format matched symptoms for display
         matched_display = ", ".join(s.replace("_", " ").title() for s in result["matched_symptoms"])
-        confidence_pct = f"{result['confidence'] * 100:.1f}%"
+        confidence_pct  = f"{result['confidence'] * 100:.1f}%"
 
-        # Build precautions list
-        precaution_items = ""
-        for i, p in enumerate(result["precautions"], 1):
-            precaution_items += f"<li>{p.capitalize()}</li>"
+        # FIX: Unmatched symptoms ka feedback dikhao
+        unmatched_feedback = ""
+        if result["unmatched_symptoms"]:
+            unmatched_clean = [
+                u.replace("_", " ") for u in result["unmatched_symptoms"]
+                if len(u.replace("_", " ")) > 3
+            ][:4]
+            if unmatched_clean:
+                unmatched_feedback = f"""
+<div style="background:#F0F9FF;padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:0.83em;color:#0369A1;">
+ℹ️ <strong>These symptoms could not be recognized:</strong> {', '.join(f'"{s}"' for s in unmatched_clean)}<br>
+Try describing them using different words for better accuracy.
+</div>"""
 
-        response = f"""<div style="margin-bottom: 12px;">
+        # FIX: Low confidence warning
+        confidence_warning = ""
+        if result["low_confidence"]:
+            alt_diseases = ""
+            for alt in result["top3"][1:]:   # top 1 skip, baaki dikhao
+                alt_diseases += f'<li>{alt["disease"]} ({alt["confidence"]*100:.0f}%)</li>'
+
+            confidence_warning = f"""
+<div style="background:#FEF3C7;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.88em;">
+⚠️ <strong>Low Confidence ({confidence_pct})</strong> — The model is not very certain.<br>
+Your symptoms match multiple conditions. Please describe more symptoms for a better result.<br>
+<strong>Other possibilities:</strong><ul style="margin:4px 0 0 16px;padding:0;">{alt_diseases}</ul>
+<em>Please consult a doctor for a proper diagnosis.</em>
+</div>"""
+
+        # Precautions list
+        precaution_items = "".join(
+            f"<li>{p.capitalize()}</li>"
+            for p in result["precautions"]
+        )
+
+        response = f"""{unmatched_feedback}{confidence_warning}
+<div style="margin-bottom: 12px;">
 <strong>🔍 Predicted Condition:</strong> <span style="color: #5469FF; font-weight: 700; font-size: 1.05em;">{result['disease']}</span>
 <br><small style="color: #6B7280;">Confidence: {confidence_pct}</small>
 </div>
@@ -578,29 +610,29 @@ To give you a more accurate prediction, do you also experience any of these symp
 </div>
 
 <div style="background: #FEF3C7; padding: 8px 12px; border-radius: 8px; margin-top: 8px; font-size: 0.85em;">
-⚠️ <strong>Disclaimer:</strong> This is an AI-based prediction and NOT a medical diagnosis. Please consult a qualified healthcare professional for proper evaluation and treatment.
+⚠️ <strong>Disclaimer:</strong> This is an AI-based prediction and NOT a medical diagnosis. Please consult a qualified healthcare professional.
 </div>
 
 <div style="margin-top: 10px; font-size: 0.85em; color: #6B7280;">
 🔄 <em>Type <strong>"new"</strong> to start a new symptom check.</em>
 </div>"""
 
-        # ── Doctor Recommendations ────────────────────────────────────────
+        # ── Doctor Recommendations ─────────────────────────────────────────
         recommended_doctors = _get_recommended_doctors(result["disease"])
 
         if recommended_doctors:
             doctor_cards = ""
             for doc in recommended_doctors:
-                name = doc.user.full_name or "Doctor"
-                spec = doc.specialization or "Specialist"
-                clinic = doc.clinic_name or "Clinic"
-                exp = doc.years_of_experience
+                name     = doc.user.full_name or "Doctor"
+                spec     = doc.specialization or "Specialist"
+                clinic   = doc.clinic_name or "Clinic"
+                exp      = doc.years_of_experience
                 exp_text = f"{exp} yrs exp" if exp else ""
-                initial = name[0].upper() if name else "D"
+                initial  = name[0].upper() if name else "D"
+                patient_name = patient.user.full_name.replace("'", "\\'") if patient and patient.user.full_name else ""
                 doctor_cards += f"""
 <div style="display:flex;align-items:center;gap:12px;background:white;border:1px solid #E2E8F0;
-border-radius:12px;padding:10px 14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);
-transition:box-shadow 0.2s;">
+border-radius:12px;padding:10px 14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
   <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#5469FF,#4338CA);
   color:white;display:flex;align-items:center;justify-content:center;font-weight:700;
   font-size:1.1em;flex-shrink:0;">{initial}</div>
@@ -608,7 +640,8 @@ transition:box-shadow 0.2s;">
     <div style="font-weight:700;color:#0A2540;font-size:0.95em;">Dr. {name}</div>
     <div style="font-size:0.82em;color:#6B7280;">{spec} &bull; {clinic}{' &bull; ' + exp_text if exp_text else ''}</div>
   </div>
-  <button onclick="openBookingModal('Dr. {name.replace("'", "\\'")}', '{spec.replace("'", "\\'")}', {doc.id}, '{patient.user.full_name.replace("'", "\\'") if patient and patient.user.full_name else ''}')" style="flex-shrink:0;background:linear-gradient(135deg,#14B8A6,#0D9488);
+  <button onclick="openBookingModal('Dr. {name.replace("'", "\\'")}', '{spec.replace("'", "\\'")}', {doc.id}, '{patient_name}')"
+  style="flex-shrink:0;background:linear-gradient(135deg,#14B8A6,#0D9488);
   color:white;padding:5px 12px;border-radius:20px;font-size:0.8em;font-weight:600;
   border:none;cursor:pointer;white-space:nowrap;">Book →</button>
 </div>"""

@@ -1,18 +1,18 @@
 """
 train_model.py — Train a symptom-based disease prediction model.
 
+FIX SUMMARY (kya fix kiya):
+  FIX 1: RandomForestClassifier + DecisionTreeClassifier mein class_weight="balanced" add kiya
+          → Isse imbalanced dataset ka bias khatam hoga (most important fix)
+  FIX 2: Symptom normalization consistent rakha (same as predict.py)
+  FIX 3: Disease name strip() add kiya (trailing spaces se duplicate classes ban rahe the)
+
 Usage:
     python prediction_model/train_model.py
-
-This script:
-1. Loads dataset.csv and cleans symptom names
-2. Creates binary feature vectors for each symptom
-3. Trains a Random Forest classifier
-4. Evaluates accuracy on a held-out test set
-5. Saves the trained model and metadata to prediction_model/saved_model/
 """
 
 import os
+import re
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
@@ -23,48 +23,28 @@ from sklearn.metrics import accuracy_score, classification_report
 import joblib
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, "data", "dataset.csv")
-SAVE_DIR = os.path.join(BASE_DIR, "saved_model")
+SAVE_DIR  = os.path.join(BASE_DIR, "saved_model")
 
 
-# ── BUG FIX #1: Correct symptom normalization ─────────────────────────────────
-# OLD (broken): str(val).strip().replace(" ", "")   ← removes ALL spaces first
-#               then .lower().replace(" ", "_")      ← no spaces left to replace!
-#
-# This caused 3 symptoms with embedded spaces to be mangled:
-#   "spotting_ urination"  → "spotting__urination"  (double underscore)
-#   "foul_smell_of urine"  → "foul_smell_ofurine"   (merged words)
-#   "dischromic _patches"  → "dischromic__patches"  (double underscore)
-#
-# NEW (fixed): single-pass normalization — strip, lowercase, collapse all
-#              whitespace variants into a single underscore.
+# ── Symptom normalization (predict.py ke saath EXACTLY same hona chahiye) ──────
 def normalize_symptom(val):
     """
-    Normalize a raw symptom string from the CSV into a consistent key.
-
-    Steps:
-      1. Convert to string and strip leading/trailing whitespace
-      2. Lowercase
-      3. Replace hyphens with underscores
-      4. Split on whitespace (handles spaces, tabs, multiple spaces)
-         and rejoin with a single underscore
-      5. Collapse any runs of multiple underscores into one
+    Raw CSV value ko consistent dataset key mein convert karo.
+    IMPORTANT: yahi function predict.py mein bhi use hota hai — dono sync mein rahein.
     """
-    import re
     s = str(val).strip().lower().replace("-", "_")
-    # join words on any whitespace with underscore
-    s = "_".join(s.split())
-    # collapse double (or more) underscores produced by stray spaces in CSV
-    s = re.sub(r"_+", "_", s)
+    s = "_".join(s.split())        # koi bhi whitespace → single underscore
+    s = re.sub(r"_+", "_", s)     # double underscore collapse
     return s
 
 
 def load_and_clean_data(path):
-    """Load dataset.csv and return (diseases, symptom_lists)."""
+    """dataset.csv load karo aur (diseases, symptom_lists) return karo."""
     df = pd.read_csv(path, header=None)
 
-    diseases = []
+    diseases      = []
     symptom_lists = []
 
     for _, row in df.iterrows():
@@ -74,7 +54,6 @@ def load_and_clean_data(path):
 
         symptoms = []
         for val in row.iloc[1:]:
-            # ── BUG FIX #1 applied here ───────────────────────────────────
             s = normalize_symptom(val)
             if s and s != "nan":
                 symptoms.append(s)
@@ -87,13 +66,11 @@ def load_and_clean_data(path):
 
 
 def build_feature_matrix(diseases, symptom_lists):
-    """Create binary feature matrix from symptom lists."""
-    # Collect all unique symptoms
+    """Binary feature matrix banao symptom lists se."""
     all_symptoms = sorted(set(s for sl in symptom_lists for s in sl))
-    print(f"📊 Total unique symptoms: {len(all_symptoms)}")
-    print(f"📊 Total samples: {len(diseases)}")
+    print(f"📊 Total unique symptoms : {len(all_symptoms)}")
+    print(f"📊 Total samples         : {len(diseases)}")
 
-    # Build binary matrix
     symptom_index = {s: i for i, s in enumerate(all_symptoms)}
     X = np.zeros((len(symptom_lists), len(all_symptoms)), dtype=int)
 
@@ -102,36 +79,47 @@ def build_feature_matrix(diseases, symptom_lists):
             if s in symptom_index:
                 X[i, symptom_index[s]] = 1
 
-    # ── BUG FIX #2: Normalize disease names before label encoding ─────────
-    # Dataset has trailing spaces in some disease names e.g. "Diabetes " and
-    # "Hypertension " which caused duplicate classes in the encoder.
+    # FIX 2: Disease name strip karo — trailing spaces se duplicates bante the
     diseases_clean = [d.strip() for d in diseases]
 
     le = LabelEncoder()
-    y = le.fit_transform(diseases_clean)
+    y  = le.fit_transform(diseases_clean)
 
-    print(f"📊 Total diseases: {len(le.classes_)}")
+    print(f"📊 Total diseases        : {len(le.classes_)}")
     return X, y, all_symptoms, le
 
 
 def train_and_evaluate(X, y, le):
-    """Train Voting Classifier (Random Forest + Decision Tree) and print evaluation metrics."""
+    """
+    Voting Classifier train karo aur evaluate karo.
+
+    ★ FIX 1 (MOST IMPORTANT): class_weight='balanced' add kiya dono models mein
+      Problem tha: Dataset imbalanced hai (kuch diseases ke zyada samples, kuch ke kam)
+      → Bina class_weight ke model common diseases ko zyada predict karta tha
+      → class_weight='balanced' se har disease ko equal importance milti hai
+    """
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    print(f"\n📊 Dataset explicitly divided into training and testing sets:")
-    print(f"   - Training set: {X_train.shape[0]} samples")
-    print(f"   - Testing set:  {X_test.shape[0]} samples")
-
+    print(f"\n📊 Training set  : {X_train.shape[0]} samples")
+    print(f"📊 Testing set   : {X_test.shape[0]} samples")
     print("\n🔧 Training Ensemble Model (Random Forest + Decision Tree)...")
 
+    # ★ FIX 1: class_weight="balanced" — ZAROOR RAKHO
     rf_model = RandomForestClassifier(
-        n_estimators=100,
+        n_estimators=200,          # 100 se badhakar 200 kiya — better accuracy
         random_state=42,
         n_jobs=-1,
+        class_weight="balanced",   # ← FIX: imbalanced dataset handle karega
+        min_samples_leaf=2,        # overfitting reduce karega
     )
-    dt_model = DecisionTreeClassifier(random_state=42)
+
+    dt_model = DecisionTreeClassifier(
+        random_state=42,
+        class_weight="balanced",   # ← FIX: yahan bhi zaroor hai
+        min_samples_leaf=2,
+    )
 
     model = VotingClassifier(
         estimators=[("rf", rf_model), ("dt", dt_model)],
@@ -140,8 +128,8 @@ def train_and_evaluate(X, y, le):
 
     model.fit(X_train, y_train)
 
-    # Evaluate
-    y_pred = model.predict(X_test)
+    # Evaluation
+    y_pred   = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"\n✅ Test Accuracy: {accuracy * 100:.2f}%")
     print("\n📋 Classification Report:\n")
@@ -151,20 +139,20 @@ def train_and_evaluate(X, y, le):
 
 
 def save_artifacts(model, le, all_symptoms):
-    """Save model, label encoder, and symptoms list."""
+    """Model, label encoder, aur symptoms list save karo."""
     os.makedirs(SAVE_DIR, exist_ok=True)
 
     model_path    = os.path.join(SAVE_DIR, "model.pkl")
     le_path       = os.path.join(SAVE_DIR, "label_encoder.pkl")
     symptoms_path = os.path.join(SAVE_DIR, "symptoms_list.pkl")
 
-    joblib.dump(model, model_path)
-    joblib.dump(le, le_path)
+    joblib.dump(model,        model_path)
+    joblib.dump(le,           le_path)
     joblib.dump(all_symptoms, symptoms_path)
 
-    print(f"\n💾 Model saved to:          {model_path}")
-    print(f"💾 Label encoder saved to:  {le_path}")
-    print(f"💾 Symptoms list saved to:  {symptoms_path}")
+    print(f"\n💾 Model saved          : {model_path}")
+    print(f"💾 Label encoder saved  : {le_path}")
+    print(f"💾 Symptoms list saved  : {symptoms_path}")
 
 
 def main():
@@ -172,20 +160,16 @@ def main():
     print("  HealSmart — Disease Prediction Model Training")
     print("=" * 60)
 
-    # 1. Load data
     print(f"\n📂 Loading data from: {DATA_PATH}")
     diseases, symptom_lists = load_and_clean_data(DATA_PATH)
 
-    # 2. Build features
     X, y, all_symptoms, le = build_feature_matrix(diseases, symptom_lists)
 
-    # 3. Train & evaluate
     model = train_and_evaluate(X, y, le)
 
-    # 4. Save
     save_artifacts(model, le, all_symptoms)
 
-    print("\n🎉 Training complete!")
+    print("\n🎉 Training complete! Ab naya model.pkl use karo.")
 
 
 if __name__ == "__main__":
