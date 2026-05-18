@@ -32,3 +32,23 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.patient} - {self.doctor} - {self.appointment_date}"
+
+
+class MedicalReport(models.Model):
+    """Stores the AI disease prediction report for each patient session."""
+    patient             = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_reports')
+    appointment         = models.ForeignKey(Appointment, null=True, blank=True, on_delete=models.SET_NULL, related_name='reports')
+    symptoms            = models.TextField()               # comma-separated matched symptoms
+    predicted_disease   = models.CharField(max_length=200)
+    disease_description = models.TextField(blank=True)
+    precautions         = models.TextField(blank=True)  
+    diet_plan           = models.TextField(blank=True, default="")# stored as JSON list string
+    confidence          = models.FloatField(default=0.0)
+    created_at          = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "medical_reports"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.patient} — {self.predicted_disease} ({self.created_at.date()})"

@@ -1081,6 +1081,32 @@
                     if (data.success) {
                         // Add bot response (HTML formatted)
                         addMessage(data.response, false, true);
+
+                        // If a medical report was generated, append download button
+                        if (data.report_id) {
+                            const reportUrl = `/patient/report/${data.report_id}/`;
+                            const downloadDiv = document.createElement('div');
+                            downloadDiv.style.cssText = 'margin-top:12px;padding-top:12px;border-top:2px dashed #EEF2FF;';
+                            downloadDiv.innerHTML = `
+                                <a href="${reportUrl}" target="_blank"
+                                   style="display:inline-flex;align-items:center;gap:8px;
+                                          background:linear-gradient(135deg,#5469FF,#4338CA);
+                                          color:white;padding:9px 20px;border-radius:50px;
+                                          font-weight:700;font-size:0.88em;text-decoration:none;
+                                          box-shadow:0 4px 14px rgba(84,105,255,0.35);
+                                          transition:all 0.3s;">
+                                    &#128196; Download My Medical Report
+                                </a>
+                                <div style="margin-top:6px;font-size:0.78em;color:#6B7280;">
+                                    Opens in new tab &mdash; Use browser Print to save as PDF
+                                </div>
+                            `;
+                            // Append inside the last bot message content
+                            const lastBotMsg = chatMessages.querySelector('.message-bot:last-child .message-content');
+                            if (lastBotMsg) {
+                                lastBotMsg.appendChild(downloadDiv);
+                            }
+                        }
                     } else {
                         addMessage(data.error || "Sorry, something went wrong.", false);
                     }
@@ -1346,10 +1372,10 @@
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
-                    showCustomAlert('success', 'Booking Confirmed!', 'Your appointment has been booked successfully.');
                     closeBookingModal();
-                    // Optional: Refresh or redirect
-                    // setTimeout(() => location.reload(), 2000);
+                    showCustomAlert('success', 'Booking Confirmed!', 'Your appointment has been booked successfully. Please only visit the clinic or hospital if the doctor has approved the appointment. Call the receptionist in case of an emergency.', function() {
+                        location.reload();
+                    });
                 } else {
                     showCustomAlert('error', 'Booking Failed', result.error || 'This time slot is already booked. Please choose a different time.');
                 }
@@ -1360,7 +1386,10 @@
             });
         }
 
-        function showCustomAlert(type, title, message) {
+        let alertCallback = null;
+
+        function showCustomAlert(type, title, message, callback = null) {
+            alertCallback = callback;
             const modal = document.getElementById('customAlertModal');
             const icon = document.getElementById('alertIcon');
             const divider = document.getElementById('alertDivider');
@@ -1380,6 +1409,10 @@
 
         function closeCustomAlert() {
             document.getElementById('customAlertModal').classList.remove('show');
+            if (alertCallback) {
+                alertCallback();
+                alertCallback = null;
+            }
         }
 
         // Close on clicking outside

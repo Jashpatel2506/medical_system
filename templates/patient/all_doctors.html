@@ -679,12 +679,16 @@
             .then(r => r.json())
             .then(res => {
                 if(res.success) {
-                    closeBookingModal();
-                    showCustomAlert('Booked', 'Appointment booked successfully', 'success', function() {
-                        window.location.href = "{% url 'patient_dashboard' %}";
+                    
+                    showCustomAlert('Booking Confirmed!', 'Your appointment has been booked successfully. Please only visit the clinic or hospital if the doctor has approved the appointment. Call the receptionist in case of an emergency.', 'success', function() {
+                        location.reload();
+
+                        closeBookingModal();
                     });
                 } else {
-                    showCustomAlert('Error', 'Booking Failed', 'error');
+                    showCustomAlert('error', 'Booking Failed', 'This time slot is already booked. Please choose a different time.');
+
+                    
                 }
             });
         }

@@ -186,7 +186,14 @@ def forgot_password_view(request):
             
             # Send Email
             subject = "HealSmart - Password Reset Request"
-            message = f"Hello {user.full_name},\n\nPlease click the link below to reset your password. This link is valid for 1 hour.\n\n{reset_url}\n\nIf you did not request this, please ignore this email."
+            from django.template.loader import render_to_string
+            from django.utils.html import strip_tags
+            
+            html_message = render_to_string('login/password_reset_email.html', {
+                'user': user,
+                'reset_url': reset_url,
+            })
+            message = strip_tags(html_message)
             
             try:
                 send_mail(
@@ -195,25 +202,26 @@ def forgot_password_view(request):
                     settings.DEFAULT_FROM_EMAIL,
                     [user.email],
                     fail_silently=False,
+                    html_message=html_message
                 )
-                return render(request, "login/forgot_password.html", {
+                return render(request, "login/password_reset.html", {
                     "success_msg": "Password reset link has been sent to your email address."
                 })
             except Exception as e:
                 # If email fails, log error and show failure. In dev with no SMTP it logs here.
                 print(f"Error sending email: {e}")
                 print(f"--- RESET LINK (For Testing) ---\n{reset_url}\n-------------------------------")
-                return render(request, "login/forgot_password.html", {
+                return render(request, "login/password_reset.html", {
                     "error": "Failed to send email. Check configuration or logs."
                 })
                 
         except User.DoesNotExist:
             # Prevent email enumeration by still showing success or generic message
-            return render(request, "login/forgot_password.html", {
+            return render(request, "login/password_reset.html", {
                 "success_msg": "If the email is registered, a reset link has been sent."
             })
             
-    return render(request, "login/forgot_password.html")
+    return render(request, "login/password_reset.html")
 
 def reset_password_view(request, token):
     signer = TimestampSigner()
@@ -221,22 +229,22 @@ def reset_password_view(request, token):
         # Token is valid for 1 hour (3600 seconds)
         email = signer.unsign(token, max_age=3600)
     except SignatureExpired:
-        return render(request, "login/reset_password.html", {"error": "The reset link has expired. Please request a new one.", "invalid_link": True})
+        return render(request, "login/password_reset_confirm.html", {"error": "The reset link has expired. Please request a new one.", "invalid_link": True})
     except BadSignature:
-        return render(request, "login/reset_password.html", {"error": "Invalid reset link.", "invalid_link": True})
+        return render(request, "login/password_reset_confirm.html", {"error": "Invalid reset link.", "invalid_link": True})
         
     if request.method == "POST":
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirmPassword")
         
         if not password or len(password) < 8:
-            return render(request, "login/reset_password.html", {"error": "Password must be at least 8 characters long and contain at least one letter, one number, and one special character"})
+            return render(request, "login/password_reset_confirm.html", {"error": "Password must be at least 8 characters long and contain at least one letter, one number, and one special character"})
             
         if password != confirm_password:
-            return render(request, "login/reset_password.html", {"error": "Passwords do not match"})
+            return render(request, "login/password_reset_confirm.html", {"error": "Passwords do not match"})
             
         if not (re.search(r"[A-Za-z]", password) and re.search(r"[0-9]", password) and re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)):
-            return render(request, "login/reset_password.html", {"error": "Password must be at least 8 characters long and contain at least one letter, one number, and one special character"})
+            return render(request, "login/password_reset_confirm.html", {"error": "Password must be at least 8 characters long and contain at least one letter, one number, and one special character"})
             
         try:
             user = User.objects.get(email=email)
@@ -244,6 +252,6 @@ def reset_password_view(request, token):
             user.save()
             return render(request, "login/login.html", {"success_msg": "Your password has been successfully reset. You can now log in."})
         except User.DoesNotExist:
-            return render(request, "login/reset_password.html", {"error": "User no longer exists.", "invalid_link": True})
+            return render(request, "login/password_reset_confirm.html", {"error": "User no longer exists.", "invalid_link": True})
             
-    return render(request, "login/reset_password.html", {"email": email})
+    return render(request, "login/password_reset_confirm.html", {"email": email})

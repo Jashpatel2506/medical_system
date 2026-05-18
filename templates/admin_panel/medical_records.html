@@ -6,47 +6,514 @@
 
 {% block extra_css %}
 <style>
-    .empty-panel {
+    /* ── Stats Strip ── */
+    .stats-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 1.4rem 1.8rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .stat-icon {
+        width: 50px; height: 50px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+    .stat-icon.blue  { background: #EEF2FF; }
+    .stat-icon.teal  { background: #F0FDFA; }
+    .stat-icon.amber { background: #FFFBEB; }
+    .stat-value { font-size: 1.9rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .stat-label { font-size: 0.82rem; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+    /* ── Table Card ── */
+    .table-card {
         background: white;
         border-radius: 20px;
-        padding: 4rem 2rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        border: 2px dashed var(--border);
-        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid var(--border);
+        overflow: hidden;
     }
-
-    .empty-icon {
-        font-size: 4.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.25;
+    .table-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid var(--border);
     }
-
-    .empty-title {
+    .table-card-title {
         font-family: 'Playfair Display', serif;
-        font-size: 1.75rem;
+        font-size: 1.4rem;
         font-weight: 900;
         color: var(--primary);
-        margin-bottom: 0.75rem;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .record-count-badge {
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
     }
 
-    .empty-text {
-        font-size: 1rem;
+    /* ── Table ── */
+    .records-table { width: 100%; border-collapse: collapse; }
+    .records-table thead tr {
+        background: linear-gradient(135deg, #F8FAFC, #EEF2FF);
+    }
+    .records-table th {
+        padding: 1rem 1.25rem;
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
         color: var(--text-light);
-        font-weight: 500;
-        max-width: 500px;
-        margin: 0 auto;
-        line-height: 1.8;
+        font-weight: 700;
+        border-bottom: 2px solid var(--border);
+    }
+    .records-table td {
+        padding: 1rem 1.25rem;
+        font-size: 0.93rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+    }
+    .records-table tbody tr:hover {
+        background: #F8FAFC;
+        transition: background 0.2s;
+    }
+    .records-table tbody tr:last-child td { border-bottom: none; }
+
+    /* ── Patient Cell ── */
+    .patient-cell { display: flex; align-items: center; gap: 10px; }
+    .patient-avatar {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .patient-name { font-weight: 700; color: var(--primary); font-size: 0.95rem; }
+    .patient-email { font-size: 0.78rem; color: var(--text-light); }
+
+    /* ── Disease Badge ── */
+    .disease-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+        color: var(--accent);
+        border: 1.5px solid #C7D2FE;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ── Confidence bar ── */
+    .confidence-wrap { display: flex; align-items: center; gap: 8px; }
+    .confidence-bar-bg {
+        flex: 1; height: 6px; background: var(--border); border-radius: 3px; min-width: 60px;
+    }
+    .confidence-bar-fill {
+        height: 100%; border-radius: 3px;
+        background: linear-gradient(90deg, #5469FF, #14B8A6);
+    }
+    .confidence-pct { font-weight: 700; font-size: 0.82rem; color: var(--accent); white-space: nowrap; }
+
+    /* ── Doctor cell ── */
+    .doctor-tag {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #F0FDFA;
+        border: 1px solid #99F6E4;
+        color: #0D9488;
+        padding: 4px 10px; border-radius: 20px;
+        font-size: 0.82rem; font-weight: 600;
+    }
+    .no-data { color: var(--text-light); font-style: italic; font-size: 0.85rem; }
+
+    /* ── Actions ── */
+    .btn-view {
+        background: linear-gradient(135deg, var(--accent), #6366F1);
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    .btn-view:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(84,105,255,0.3); }
+
+    .btn-download-link {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: linear-gradient(135deg, #14B8A6, #0D9488);
+        color: white;
+        padding: 6px 12px; border-radius: 20px;
+        font-size: 0.82rem; font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+        margin-left: 6px;
+    }
+    .btn-download-link:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(20,184,166,0.3); }
+
+    /* ── Empty state ── */
+    .empty-panel {
+        padding: 5rem 2rem;
+        text-align: center;
+    }
+    .empty-icon { font-size: 4rem; opacity: 0.25; margin-bottom: 1rem; }
+    .empty-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.75rem; font-weight: 900;
+        color: var(--primary); margin-bottom: 0.75rem;
+    }
+    .empty-text { font-size: 0.95rem; color: var(--text-light); max-width: 480px; margin: 0 auto; line-height: 1.8; }
+
+    /* ── Detail Modal overrides ── */
+    .detail-section { margin-bottom: 1.5rem; }
+    .detail-section-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-light);
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border);
+    }
+    .symptom-chips-admin { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip-admin {
+        background: #F0FDF4; border: 1.5px solid #BBF7D0;
+        color: #065F46; padding: 4px 12px;
+        border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+    }
+    .precaution-item-admin {
+        background: #FFFBEB; border-left: 3px solid var(--warning);
+        padding: 8px 12px; border-radius: 8px;
+        font-size: 0.88rem; margin-bottom: 8px;
+        display: flex; gap: 8px; align-items: flex-start;
+    }
+    .pnum {
+        width: 20px; height: 20px;
+        background: var(--warning); color: white;
+        border-radius: 50%; font-size: 0.72rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .desc-box {
+        background: var(--bg-light); border-left: 4px solid var(--accent);
+        padding: 1rem 1.25rem; border-radius: 10px;
+        line-height: 1.8; font-size: 0.9rem;
+    }
+    .disease-banner-admin {
+        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+        border: 2px solid #C7D2FE;
+        border-radius: 14px; padding: 1rem 1.5rem;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .dname-admin { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 900; color: var(--accent); }
+    .conf-badge-admin {
+        background: var(--accent); color: white;
+        padding: 4px 14px; border-radius: 20px;
+        font-weight: 700; font-size: 0.85rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="empty-panel">
-    <div class="empty-icon">📄</div>
-    <h2 class="empty-title">Medical Records Coming Soon</h2>
-    <p class="empty-text">
-        The Medical Records feature is not yet implemented because the database model does not exist.
-        Once the model is added, this page will list patient medical histories and prescriptions.
-    </p>
+
+<!-- Stats Strip -->
+<div class="stats-strip">
+    <div class="stat-card">
+        <div class="stat-icon blue">📄</div>
+        <div>
+            <div class="stat-value">{{ reports.count }}</div>
+            <div class="stat-label">Total Reports</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon teal">🩺</div>
+        <div>
+            <div class="stat-value">{{ reports|length }}</div>
+            <div class="stat-label">This Session</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon amber">📊</div>
+        <div>
+            <div class="stat-value">AI</div>
+            <div class="stat-label">Prediction Reports</div>
+        </div>
+    </div>
 </div>
+
+<!-- Records Table -->
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">
+            📋 Medical Prediction Records
+            <span class="record-count-badge">{{ reports.count }} Total</span>
+        </div>
+    </div>
+
+    {% if reports %}
+    <table class="records-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Patient</th>
+                <th>Predicted Disease</th>
+                <th>Confidence</th>
+                <th>Consulting Doctor</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for report in reports %}
+            <tr>
+                <td style="color:var(--text-light);font-weight:600;">{{ forloop.counter }}</td>
+
+                <!-- Patient -->
+                <td>
+                    <div class="patient-cell">
+                        <div class="patient-avatar">{{ report.patient.user.full_name|first|upper }}</div>
+                        <div>
+                            <div class="patient-name">{{ report.patient.user.full_name }}</div>
+                            <div class="patient-email">{{ report.patient.user.email }}</div>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Disease -->
+                <td>
+                    <span class="disease-badge" title="{{ report.predicted_disease }}">{{ report.predicted_disease }}</span>
+                </td>
+
+                <!-- Confidence -->
+                <td>
+                    <div class="confidence-wrap">
+                        <div class="confidence-bar-bg">
+                            <div class="confidence-bar-fill" style="width:{{ report.confidence|floatformat:0 }}%;"></div>
+                        </div>
+                        <span class="confidence-pct">{{ report.confidence|floatformat:1 }}%</span>
+                    </div>
+                </td>
+
+                <!-- Doctor -->
+                <td>
+                    {% if report.appointment and report.appointment.doctor %}
+                        <span class="doctor-tag">
+                            👨‍⚕️ Dr. {{ report.appointment.doctor.user.full_name }}
+                        </span>
+                    {% else %}
+                        <span class="no-data">Not booked</span>
+                    {% endif %}
+                </td>
+
+                <!-- Date -->
+                <td style="color:var(--text-light);font-size:0.85rem;">{{ report.created_at|date:"d M Y" }}<br><small>{{ report.created_at|date:"H:i" }}</small></td>
+
+                <!-- Actions -->
+                <td>
+                    <button class="btn-view" onclick="openReportModal({{ report.id }})">View</button>
+                    <a class="btn-download-link" href="/patient/report/{{ report.id }}/" target="_blank">&#128196;</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <div class="empty-panel">
+        <div class="empty-icon">📄</div>
+        <h2 class="empty-title">No Medical Records Yet</h2>
+        <p class="empty-text">
+            Medical reports will appear here automatically once patients use the AI chatbot and receive disease predictions.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+
+<!-- ── Detail Modal ── -->
+<div class="modal" id="reportDetailModal">
+    <div class="modal-content" style="max-width:700px;">
+        <div class="modal-header">
+            <div class="modal-title">Report Details</div>
+            <button class="modal-close" onclick="closeModal('reportDetailModal')">&#10005;</button>
+        </div>
+
+        <!-- Content injected via JS -->
+        <div id="modal-report-body">
+            <p style="color:var(--text-light);text-align:center;">Loading...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden report data (JSON in script tags) -->
+{% for report in reports %}
+<script type="application/json" id="report-data-{{ report.id }}">
+{
+  "id": {{ report.id }},
+  "patient_name": "{{ report.patient.user.full_name|escapejs }}",
+  "patient_email": "{{ report.patient.user.email|escapejs }}",
+  "patient_phone": "{{ report.patient.user.phone_number|escapejs }}",
+  "patient_age": "{{ report.patient.age|default:'' }}",
+  "patient_blood": "{{ report.patient.blood_group|default:''|escapejs }}",
+  "patient_gender": "{{ report.patient.user.gender|default:''|escapejs }}",
+  "disease": "{{ report.predicted_disease|escapejs }}",
+  "confidence": {{ report.confidence|floatformat:1 }},
+  "symptoms": "{{ report.symptoms|escapejs }}",
+  "description": "{{ report.disease_description|escapejs }}",
+  "precautions": {{ report.precautions|default:"[]" }},
+  "date": "{{ report.created_at|date:'d M Y, H:i' }}",
+  "doctor_name": "{% if report.appointment and report.appointment.doctor %}Dr. {{ report.appointment.doctor.user.full_name|escapejs }}{% endif %}",
+  "doctor_spec": "{% if report.appointment and report.appointment.doctor %}{{ report.appointment.doctor.specialization|default:''|escapejs }}{% endif %}",
+  "doctor_clinic": "{% if report.appointment and report.appointment.doctor %}{{ report.appointment.doctor.clinic_name|default:''|escapejs }}{% endif %}"
+}
+</script>
+{% endfor %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+function openReportModal(reportId) {
+    const scriptEl = document.getElementById('report-data-' + reportId);
+    if (!scriptEl) return;
+
+    let r;
+    try { r = JSON.parse(scriptEl.textContent); } catch(e) { return; }
+
+    // Parse precautions
+    let precautions = [];
+    try {
+        precautions = typeof r.precautions === 'string' ? JSON.parse(r.precautions) : r.precautions;
+    } catch(e) { precautions = []; }
+
+    // Parse symptoms
+    const symptomsArr = r.symptoms ? r.symptoms.split(',').map(s => s.trim().replace(/_/g,' ')).filter(Boolean) : [];
+    const symptomChips = symptomsArr.map(s =>
+        `<span class="chip-admin">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`
+    ).join('');
+
+    // Precautions HTML
+    const precHTML = precautions.length
+        ? precautions.map((p, i) => `
+            <div class="precaution-item-admin">
+                <span class="pnum">${i+1}</span>
+                <span>${p.charAt(0).toUpperCase() + p.slice(1)}</span>
+            </div>`).join('')
+        : '<p class="no-data">No precautions recorded.</p>';
+
+    // Doctor section
+    const doctorHTML = r.doctor_name
+        ? `<div style="background:#F0FDFA;border:1.5px solid #99F6E4;border-radius:12px;padding:1rem 1.25rem;">
+            <div style="font-weight:700;color:var(--primary);">${r.doctor_name}</div>
+            <div style="font-size:0.85rem;color:var(--text-light);margin-top:2px;">
+                ${r.doctor_spec || 'General Physician'}${r.doctor_clinic ? ' &bull; ' + r.doctor_clinic : ''}
+            </div>
+           </div>`
+        : '<p class="no-data">No appointment booked at time of prediction.</p>';
+
+    document.getElementById('modal-report-body').innerHTML = `
+        <!-- Report ID + Date -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:8px;">
+            <span style="background:#EEF2FF;color:var(--accent);padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;">
+                Report #${r.id}
+            </span>
+            <span style="font-size:0.85rem;color:var(--text-light);">${r.date}</span>
+        </div>
+
+        <!-- Patient -->
+        <div class="detail-section">
+            <div class="detail-section-title">&#128100; Patient Information</div>
+            <div class="modal-body">
+                <div class="detail-group">
+                    <div class="detail-label">Full Name</div>
+                    <div class="detail-value">${r.patient_name || 'N/A'}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">${r.patient_email || 'N/A'}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Phone</div>
+                    <div class="detail-value">${r.patient_phone || 'N/A'}</div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Age / Blood / Gender</div>
+                    <div class="detail-value">${r.patient_age || '?'} yrs &bull; ${r.patient_blood || 'N/A'} &bull; ${r.patient_gender || 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor -->
+        <div class="detail-section">
+            <div class="detail-section-title">&#128104;&#8205;&#9877;&#65039; Consulting Doctor</div>
+            ${doctorHTML}
+        </div>
+
+        <!-- Disease -->
+        <div class="detail-section">
+            <div class="detail-section-title">&#128269; Predicted Condition</div>
+            <div class="disease-banner-admin">
+                <div class="dname-admin">${r.disease}</div>
+                <div class="conf-badge-admin">Confidence: ${r.confidence}%</div>
+            </div>
+        </div>
+
+        <!-- Symptoms -->
+        <div class="detail-section">
+            <div class="detail-section-title">&#128203; Reported Symptoms</div>
+            <div class="symptom-chips-admin">${symptomChips || '<span class="no-data">None recorded</span>'}</div>
+        </div>
+
+        <!-- Description -->
+        <div class="detail-section">
+            <div class="detail-section-title">&#128196; Description</div>
+            <div class="desc-box">${r.description || 'No description available.'}</div>
+        </div>
+
+        <!-- Precautions -->
+        <div class="detail-section">
+            <div class="detail-section-title">&#9989; Precautions</div>
+            ${precHTML}
+        </div>
+
+        <!-- Download -->
+        <div style="text-align:center;margin-top:1.5rem;">
+            <a href="/patient/report/${r.id}/" target="_blank"
+               style="display:inline-flex;align-items:center;gap:8px;
+                      background:linear-gradient(135deg,#5469FF,#4338CA);
+                      color:white;padding:10px 24px;border-radius:50px;
+                      font-weight:700;font-size:0.92rem;text-decoration:none;
+                      box-shadow:0 4px 14px rgba(84,105,255,0.3);">
+                &#128196; View & Download Report
+            </a>
+        </div>
+    `;
+
+    document.getElementById('reportDetailModal').classList.add('show');
+}
+</script>
 {% endblock %}

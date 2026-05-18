@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report — {{ report.predicted_disease }} | HealSmart</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #0A2540;
+            --accent: #5469FF;
+            --teal: #14B8A6;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --bg-light: #F1F5F9;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #E0F2FE, #F1F5F9);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: var(--text-dark);
+        }
+
+        .report-wrapper {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        /* Action bar — hidden in print */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: opacity 0.2s;
+        }
+        .btn-back:hover { opacity: 0.75; }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #5469FF, #4338CA);
+            color: white;
+            border: none;
+            padding: 0.65rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(84,105,255,0.3);
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(84,105,255,0.4); }
+
+        /* Report Card */
+        .report-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(10,37,64,0.12);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .report-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #164e8e 100%);
+            color: white;
+            padding: 2.5rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .report-header::before {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            right: -80px; top: -80px;
+        }
+        .report-header::after {
+            content: '';
+            position: absolute;
+            width: 200px; height: 200px;
+            background: rgba(84,105,255,0.15);
+            border-radius: 50%;
+            left: -40px; bottom: -60px;
+        }
+
+        .brand-line {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .brand-icon {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .brand-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .brand-name span { color: #60a5fa; }
+        .brand-sub {
+            font-size: 0.78rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .report-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 900;
+            margin-bottom: 0.4rem;
+            position: relative; z-index: 1;
+        }
+        .report-subtitle {
+            font-size: 0.88rem;
+            opacity: 0.7;
+            position: relative; z-index: 1;
+        }
+        .report-id-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            position: relative; z-index: 1;
+        }
+
+        /* Body */
+        .report-body {
+            padding: 2.5rem 3rem;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-light);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title .icon {
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+        }
+        .icon-blue { background: #EEF2FF; }
+        .icon-teal { background: #F0FDFA; }
+        .icon-amber { background: #FFFBEB; }
+        .icon-green { background: #F0FDF4; }
+        .icon-red   { background: #FEF2F2; }
+
+        /* Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        .info-item { display: flex; flex-direction: column; gap: 0.3rem; }
+        .info-item.full { grid-column: 1 / -1; }
+        .info-label {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .info-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .info-value.accent { color: var(--accent); font-size: 1.1rem; }
+        .info-value.teal   { color: var(--teal); }
+
+        /* Disease Banner */
+        .disease-banner {
+            background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+            border: 2px solid #C7D2FE;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .disease-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--accent);
+        }
+        .confidence-badge {
+            background: var(--accent);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        /* Symptoms chips */
+        .symptom-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .symptom-chip {
+            background: #F0FDF4;
+            border: 1.5px solid #BBF7D0;
+            color: #065F46;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Precautions list */
+        .precautions-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .precautions-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 0.75rem 1rem;
+            background: #FFFBEB;
+            border-radius: 10px;
+            border-left: 3px solid var(--warning);
+            font-size: 0.95rem;
+        }
+        .precaution-num {
+            width: 22px; height: 22px;
+            background: var(--warning);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Description */
+        .description-text {
+            background: var(--bg-light);
+            padding: 1.25rem;
+            border-radius: 12px;
+            line-height: 1.8;
+            color: var(--text-dark);
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Doctor info */
+        .doctor-card {
+            background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+            border: 1.5px solid #99F6E4;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .doctor-avatar {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--teal), #0D9488);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .doctor-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .doctor-meta {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .no-doctor {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            background: #FEF3C7;
+            border: 1.5px solid #FDE68A;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            font-size: 0.85rem;
+            color: #92400E;
+            line-height: 1.7;
+        }
+        .disclaimer strong { color: #78350F; }
+
+        /* Footer */
+        .report-footer {
+            background: var(--bg-light);
+            border-top: 2px solid var(--border);
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .footer-note {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .footer-brand {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        .footer-brand span { color: var(--accent); }
+
+        /* ── Print Styles ── */
+        @media print {
+            body { background: white; padding: 0; }
+            .action-bar { display: none !important; }
+            .report-card { box-shadow: none; border-radius: 0; }
+            .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .disease-banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .symptom-chip { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .precautions-list li { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
+        @media (max-width: 640px) {
+            .report-header, .report-body, .report-footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="report-wrapper">
+
+    <!-- Action Bar -->
+    <div class="action-bar" id="action-bar">
+        <a href="javascript:window.close();" class="btn-back" title="Close this tab and return to your chat">&#8592; Back to Chat</a>
+        <button class="btn-download" onclick="window.print()">
+            &#128196; Download / Print Report
+        </button>
+    </div>
+
+    <!-- Report Card -->
+    <div class="report-card">
+
+        <!-- Header -->
+        <div class="report-header">
+            <div class="brand-line">
+                <div class="brand-icon">&#127973;</div>
+                <div>
+                    <div class="brand-name">Heal<span>Smart</span></div>
+                    <div class="brand-sub">AI Health Assistant</div>
+                </div>
+            </div>
+            <div class="report-title">Medical Prediction Report</div>
+            <div class="report-subtitle">Generated by HealSmart AI &mdash; For informational purposes only</div>
+            <div class="report-id-badge">
+                &#128203; Report ID: #{{ report.id }} &nbsp;&bull;&nbsp; {{ report.created_at|date:"d M Y, H:i" }}
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="report-body">
+
+            <!-- Patient Details -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-blue">&#128100;</span>
+                    Patient Information
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Full Name</span>
+                        <span class="info-value">{{ patient.user.full_name|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email Address</span>
+                        <span class="info-value">{{ patient.user.email|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone Number</span>
+                        <span class="info-value">{{ patient.user.phone_number|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Age</span>
+                        <span class="info-value">{{ patient.age|default:"N/A" }} years</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Blood Group</span>
+                        <span class="info-value">{{ patient.blood_group|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Gender</span>
+                        <span class="info-value">{{ patient.user.gender|default:"N/A" }}</span>
+                    </div>
+                    {% if patient.user.address %}
+                    <div class="info-item full">
+                        <span class="info-label">Address</span>
+                        <span class="info-value">{{ patient.user.address }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Doctor Details -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-teal">&#128104;&#8205;&#9877;&#65039;</span>
+                    Consulting Doctor
+                </div>
+                {% if doctor %}
+                <div class="doctor-card">
+                    <div class="doctor-avatar">{{ doctor.user.full_name|first|upper }}</div>
+                    <div>
+                        <div class="doctor-name">Dr. {{ doctor.user.full_name }}</div>
+                        <div class="doctor-meta">
+                            {{ doctor.specialization|default:"General Physician" }}
+                            {% if doctor.clinic_name %} &bull; {{ doctor.clinic_name }}{% endif %}
+                            {% if doctor.years_of_experience %} &bull; {{ doctor.years_of_experience }} yrs experience{% endif %}
+                        </div>
+                        <div class="doctor-meta" style="margin-top:4px;">
+                            {{ doctor.user.email }}
+                            {% if doctor.user.phone_number %} &bull; {{ doctor.user.phone_number }}{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-doctor">
+                    No appointment booked yet. Doctor details will appear here after booking an appointment.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Predicted Disease -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-blue">&#128269;</span>
+                    AI Predicted Condition
+                </div>
+                <div class="disease-banner">
+                    <div class="disease-name">{{ report.predicted_disease }}</div>
+                    <div class="confidence-badge">Confidence: {{ report.confidence|floatformat:1 }}%</div>
+                </div>
+            </div>
+
+            <!-- Reported Symptoms -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-green">&#128203;</span>
+                    Reported Symptoms
+                </div>
+                <div class="symptom-chips">
+                    {% for symptom in symptoms_list %}
+                    <span class="symptom-chip">{{ symptom }}</span>
+                    {% empty %}
+                    <span style="color:var(--text-light);">No symptoms recorded.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Disease Description -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-blue">&#128196;</span>
+                    Disease Description
+                </div>
+                <div class="description-text">
+                    {{ report.disease_description|default:"No description available." }}
+                </div>
+            </div>
+
+            <!-- Precautions -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-amber">&#9989;</span>
+                    Recommended Precautions
+                </div>
+                <ol class="precautions-list">
+                    {% for precaution in precautions_list %}
+                    <li>
+                        <span class="precaution-num">{{ forloop.counter }}</span>
+                        <span>{{ precaution|capfirst }}</span>
+                    </li>
+                    {% empty %}
+                    <li><span class="precaution-num">!</span><span>No precautions recorded.</span></li>
+                    {% endfor %}
+                </ol>
+            </div>
+
+            {% if diet_plan and diet_plan.breakfast or diet_plan.general_tips %}
+            <!-- Diet Plan -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-teal">&#129367;</span>
+                    Recommended Diet Plan
+                </div>
+                <div class="info-grid" style="gap: 1rem;">
+                    {% if diet_plan.breakfast %}
+                    <div class="info-item full">
+                        <span class="info-label" style="text-transform: none; font-size: 0.85rem; color: #14532D; font-weight: 700;">&#127805; Breakfast</span>
+                        <span class="info-value teal" style="font-size: 0.95rem; font-weight: 500;">{{ diet_plan.breakfast }}</span>
+                    </div>
+                    {% endif %}
+                    {% if diet_plan.lunch %}
+                    <div class="info-item full">
+                        <span class="info-label" style="text-transform: none; font-size: 0.85rem; color: #14532D; font-weight: 700;">&#9728;&#65039; Lunch</span>
+                        <span class="info-value teal" style="font-size: 0.95rem; font-weight: 500;">{{ diet_plan.lunch }}</span>
+                    </div>
+                    {% endif %}
+                    {% if diet_plan.dinner %}
+                    <div class="info-item full">
+                        <span class="info-label" style="text-transform: none; font-size: 0.85rem; color: #14532D; font-weight: 700;">&#127769; Dinner</span>
+                        <span class="info-value teal" style="font-size: 0.95rem; font-weight: 500;">{{ diet_plan.dinner }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if diet_plan.foods_to_avoid %}
+                <div style="background:#FEF2F2;border-left:3px solid #EF4444;padding:12px 16px;border-radius:10px;margin-top:1.25rem;">
+                    <div style="color:#B91C1C;font-weight:700;margin-bottom:4px;font-size:0.9rem;letter-spacing:0.5px;">&#128683; Foods to Avoid</div>
+                    <div style="color:#374151;font-size:0.95rem;">{{ diet_plan.foods_to_avoid }}</div>
+                </div>
+                {% endif %}
+
+                {% if diet_plan.general_tips %}
+                <div style="background:#ECFDF5;border-left:3px solid #10B981;padding:12px 16px;border-radius:10px;margin-top:0.75rem;">
+                    <div style="color:#065F46;font-weight:700;margin-bottom:4px;font-size:0.9rem;letter-spacing:0.5px;">&#128161; General Tips</div>
+                    <div style="color:#374151;font-size:0.95rem;">{{ diet_plan.general_tips }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <!-- Fallback Diet Message -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="icon icon-teal">&#129367;</span>
+                    Dietary Advice
+                </div>
+                <div style="background:#ECFDF5;border-left:3px solid #10B981;padding:12px 16px;border-radius:10px;">
+                    <div style="color:#065F46;font-size:0.95rem;">Eat a balanced nutritious diet and consult a registered dietitian for a personalized plan for <strong>{{ report.predicted_disease }}</strong>.</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <strong>Medical Disclaimer:</strong> This report is generated by an AI-based prediction system and is <strong>NOT a substitute for professional medical advice, diagnosis, or treatment.</strong> Always consult a qualified healthcare professional for accurate diagnosis and treatment. HealSmart AI predictions are for informational purposes only.
+            </div>
+
+        </div><!-- /report-body -->
+
+        <!-- Footer -->
+        <div class="report-footer">
+            <div class="footer-note">
+                Generated on {{ report.created_at|date:"d F Y at H:i" }} IST
+            </div>
+            <div class="footer-brand">Heal<span>Smart</span> &mdash; AI Health Assistant</div>
+        </div>
+
+    </div><!-- /report-card -->
+
+</div><!-- /report-wrapper -->
+
+<script>
+    // Auto-trigger print dialog after DOM loads (optional: remove if you want manual)
+    // window.onload = function() { window.print(); };
+</script>
+
+</body>
+</html>

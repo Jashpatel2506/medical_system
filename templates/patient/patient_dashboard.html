@@ -1095,6 +1095,8 @@
                 gap: 2rem;
             }
         }
+
+
     </style>
 </head>
 <body>
@@ -1425,8 +1427,50 @@
 
             </div>
 
+        <!-- Medical Reports -->
+        <div class="appointments-section">
+            <div class="section-header">
+                <h2 class="section-title">Your Medical Reports</h2>
+                <span class="view-all-link" style="color: #4338CA;">{{ medical_reports.count }} reports</span>
             </div>
 
+            <div class="appointments-grid">
+            {% for report in medical_reports %}
+            <div class="appointment-card" style="border-left: 4px solid #5469FF;">
+                <div class="appointment-left">
+                    <div class="appointment-details">
+                        <div class="appointment-doctor" style="color: #4338CA;">
+                            {{ report.predicted_disease }}
+                        </div>
+                        <div class="appointment-specialty">
+                            Confidence: {{ report.confidence|floatformat:1 }}%
+                        </div>
+                        <div class="appointment-datetime">
+                            <span>📅 {{ report.created_at|date:"d M Y" }}</span>
+                            <span>🕐 {{ report.created_at|date:"H:i" }}</span>
+                        </div>
+                        {% if report.appointment and report.appointment.doctor %}
+                        <div style="margin-top: 8px; font-size: 0.85rem; color: #6B7280;">
+                            👨‍⚕️ Dr. {{ report.appointment.doctor.user.full_name }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="appointment-actions" style="display:flex; flex-direction:column; gap:8px;">
+                    <span class="appointment-status" style="background: linear-gradient(135deg, #EEF2FF, #E0E7FF); color: #4338CA; margin-bottom:0;">Generated</span>
+
+                    <a href="/patient/report/{{ report.id }}/" target="_blank" style="background: linear-gradient(135deg, #5469FF, #4338CA); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration:none; text-align:center;">
+                        Download
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">📄</div>
+                <p class="empty-text">No medical reports generated yet.</p>
+            </div>
+            {% endfor %}
+            </div>
         </div>
 
     </div>
@@ -1702,11 +1746,11 @@
 
                     if(result.success){
 
-                        showCustomAlert('success', 'Booking Confirmed!', 'Your appointment has been booked successfully.');
-
                         closeBookingModal();
-
-                        location.reload();
+                        
+                        showCustomAlert('success', 'Booking Confirmed!', 'Your appointment has been booked successfully. Please only visit the clinic or hospital if the doctor has approved the appointment. Call the receptionist in case of an emergency.', function() {
+                            location.reload();
+                        });
 
                     }else{
 
@@ -1732,8 +1776,10 @@
 
         // Custom Alert Modal Functions
         let alertTimeout = null;
+        let alertCallback = null;
 
-        function showCustomAlert(type, title, message) {
+        function showCustomAlert(type, title, message, callback = null) {
+            alertCallback = callback;
             const modal = document.getElementById('customAlertModal');
             const icon = document.getElementById('alertIcon');
             const divider = document.getElementById('alertDivider');
@@ -1754,6 +1800,10 @@
         function closeCustomAlert() {
             if (alertTimeout) clearTimeout(alertTimeout);
             document.getElementById('customAlertModal').classList.remove('show');
+            if (alertCallback) {
+                alertCallback();
+                alertCallback = null;
+            }
         }
 
         document.getElementById('customAlertModal').addEventListener('click', function(e) {

@@ -92,7 +92,11 @@ def admin_appointments(request):
 def admin_medical_records(request):
     if not is_admin(request):
         return redirect('login')
-    return render(request, 'admin_panel/medical_records.html', {})
+    from appointments.models import MedicalReport
+    reports = MedicalReport.objects.select_related(
+        'patient__user', 'appointment__doctor__user'
+    ).all()
+    return render(request, 'admin_panel/medical_records.html', {'reports': reports})
 
 def approve_doctor(request, doctor_id):
     if not is_admin(request):
